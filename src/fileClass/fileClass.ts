@@ -1,6 +1,6 @@
 import { FileClassAttribute } from "./fileClassAttribute";
 import MetadataMenu from "main";
-import { Notice, SuggestModal, TFile } from "obsidian";
+import { Notice, setIcon, SuggestModal, TFile } from "obsidian";
 import { capitalize } from "src/utils/textUtils";
 import { postValues } from "src/commands/postValues";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
@@ -100,7 +100,14 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
     }
 
     renderSuggestion(value: string, el: HTMLElement) {
-        el.setText(value);
+        el.style.display = "flex"
+        el.style.alignItems = "center"
+        el.style.gap = "0.5em"
+        const fileClass = this.plugin.fieldIndex.fileClassesName.get(value)
+        const iconDiv = el.createDiv()
+        iconDiv.style.display = "flex"
+        setIcon(iconDiv, fileClass?.getIcon() || "file-spreadsheet")
+        el.createSpan({ text: value })
         el.setAttr("id", `fileclass-${value}-add-choice`)
     }
 
