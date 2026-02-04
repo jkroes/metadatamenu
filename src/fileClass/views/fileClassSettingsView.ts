@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { ButtonComponent, FrontMatterCache, MarkdownRenderer, setIcon, TextComponent, ToggleComponent } from "obsidian";
 import { FileClass, FileClassOptions } from "../fileClass";
-import { BookmarksGroupSuggestModal, FieldSuggestModal, ParentSuggestModal, PathSuggestModal, TagSuggestModal } from "./settingsViewComponents/suggestModals";
+import { BookmarksGroupSuggestModal, FieldSuggestModal, IconSuggestModal, ParentSuggestModal, PathSuggestModal, TagSuggestModal } from "./settingsViewComponents/suggestModals";
 import { FileClassView, openTab } from "./fileClassView";
 import { setTimeout } from "timers/promises";
 import { testFileClassFieldsView } from "./fileClassFieldsView";
@@ -161,6 +161,17 @@ export class FileClassSettingsView {
             setIcon(iconContainer, this.fileClassOptions.icon);
         })
         input.inputEl.setAttr("id", "fileclass-settings-icon-input")
+        const searchBtn = new ButtonComponent(iconManagerContainer)
+            .setIcon("search")
+            .setTooltip("Browse icons")
+            .onClick(() => {
+                new IconSuggestModal(this.plugin.app, (icon) => {
+                    input.setValue(icon)
+                    this.saveBtn.addClass("active")
+                    this.fileClassOptions.icon = icon
+                    setIcon(iconContainer, icon)
+                }).open()
+            })
     }
 
 

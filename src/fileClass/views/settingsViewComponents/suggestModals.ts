@@ -1,4 +1,4 @@
-import { SuggestModal, TAbstractFile, TFolder } from "obsidian"
+import { App, getIconIds, setIcon, SuggestModal, TAbstractFile, TFolder } from "obsidian"
 import { FileClassSettingsView } from "../fileClassSettingsView"
 import MetadataMenu from "main"
 import { BookmarkItem } from "src/typings/types"
@@ -173,5 +173,37 @@ export class BookmarksGroupSuggestModal extends SuggestModal<string> {
 
     renderSuggestion(value: string, el: HTMLElement) {
         el.setText(value)
+    }
+}
+
+export class IconSuggestModal extends SuggestModal<string> {
+
+    constructor(
+        app: App,
+        private onSelect: (icon: string) => void
+    ) {
+        super(app)
+        this.setPlaceholder("Search icons...")
+        this.limit = Infinity
+    }
+
+    getSuggestions(query: string): string[] {
+        const icons = getIconIds().map(id => id.replace(/^lucide-/, ""))
+        if (!query) return icons
+        return icons.filter(id => id.toLowerCase().includes(query.toLowerCase()))
+    }
+
+    onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
+        this.onSelect(item)
+    }
+
+    renderSuggestion(value: string, el: HTMLElement) {
+        el.style.display = "flex"
+        el.style.alignItems = "center"
+        el.style.gap = "0.5em"
+        const iconDiv = el.createDiv()
+        iconDiv.style.display = "flex"
+        setIcon(iconDiv, value)
+        el.createSpan({ text: value })
     }
 }
