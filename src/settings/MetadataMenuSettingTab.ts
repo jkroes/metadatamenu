@@ -605,6 +605,21 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		autoInsertFieldsAtFileClassInsertion.settingEl.addClass("no-border");
 		autoInsertFieldsAtFileClassInsertion.controlEl.addClass("full-width");
 
+		/* Auto-insert fields at file creation for path-matched fileClasses */
+
+		const autoInsertFieldsAtFileCreation = new Setting(classFilesSettings.containerEl)
+			.setName('Auto-insert fields at file creation')
+			.setDesc('Automatically insert fields when a file is created in a folder matching a fileClass files path')
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.autoInsertFieldsAtFileCreation);
+				cb.onChange(value => {
+					this.plugin.settings.autoInsertFieldsAtFileCreation = value;
+					this.plugin.saveSettings();
+				})
+			})
+		autoInsertFieldsAtFileCreation.settingEl.addClass("no-border");
+		autoInsertFieldsAtFileCreation.controlEl.addClass("full-width");
+
 		/* Fileclass selector in modal*/
 
 		const showFileClassSelectInModal = new Setting(classFilesSettings.containerEl)

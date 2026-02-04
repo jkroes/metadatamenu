@@ -18,6 +18,7 @@ import { FileClassViewManager } from 'src/components/FileClassViewManager';
 import { IndexDatabase } from 'src/db/DatabaseManager';
 import { FileClassCodeBlockManager } from 'src/components/FileClassCodeBlockManager';
 import { AddFileClassToFileModal } from 'src/fileClass/fileClass';
+import { insertMissingFields } from 'src/commands/insertMissingFields';
 import { FileClassCodeBlockListManager } from 'src/components/FileClassCodeBlockListManager';
 import { Field, buildEmptyField } from 'src/fields/Field';
 import { TestRunner } from 'src/testing/runner';
@@ -36,6 +37,7 @@ export default class MetadataMenu extends Plugin {
 	public launched: boolean = false;
 	public indexDB: IndexDatabase;
 	public codeBlockListManager: FileClassCodeBlockListManager
+	private pendingFieldInsertions: Set<string> = new Set();
 
 	async onload(): Promise<void> {
 		console.log('+------ Metadata Menu loaded ------x-+');
@@ -93,9 +95,30 @@ export default class MetadataMenu extends Plugin {
 		this.registerEvent(
 			this.app.vault.on("create", (file) => {
 				if (!this.fieldIndex.fileClassesName.size) return
-				if (file instanceof TFile && file.extension === "md" && this.settings.chooseFileClassAtFileCreation) {
-					const modal = new AddFileClassToFileModal(this, file)
-					modal.open()
+				if (file instanceof TFile && file.extension === "md") {
+					if (this.settings.chooseFileClassAtFileCreation) {
+						const modal = new AddFileClassToFileModal(this, file)
+						modal.open()
+					}
+					if (this.settings.autoInsertFieldsAtFileCreation) {
+						this.pendingFieldInsertions.add(file.path)
+					}
+				}
+			})
+		)
+
+		this.registerEvent(
+			this.app.vault.on("delete", (file) => {
+				if (file instanceof TFile) {
+					this.pendingFieldInsertions.delete(file.path)
+				}
+			})
+		)
+
+		this.registerEvent(
+			this.app.vault.on("rename", (file, oldPath) => {
+				if (this.pendingFieldInsertions.delete(oldPath) && file instanceof TFile) {
+					this.pendingFieldInsertions.add(file.path)
 				}
 			})
 		)
@@ -120,6 +143,7 @@ export default class MetadataMenu extends Plugin {
 				if (currentView) this.indexStatus.checkForUpdate(currentView)
 				updatePropertiesCommands(this)
 				FileClassViewManager.reloadViews(this)
+				this.processPendingFieldInsertions()
 			})
 		)
 
@@ -179,6 +203,24 @@ export default class MetadataMenu extends Plugin {
 		await this.saveData(this.settings);
 		await this.fieldIndex.fullIndex();
 	};
+
+	private async processPendingFieldInsertions(): Promise<void> {
+		if (this.pendingFieldInsertions.size === 0) return
+		for (const filePath of [...this.pendingFieldInsertions]) {
+			const abstractFile = this.app.vault.getAbstractFileByPath(filePath)
+			if (!(abstractFile instanceof TFile)) {
+				this.pendingFieldInsertions.delete(filePath)
+				continue
+			}
+			const pathFields = this.fieldIndex.filesFieldsFromFilesPaths.get(filePath)
+			if (!pathFields || pathFields.length === 0) {
+				// File may not have been indexed yet; keep it pending
+				continue
+			}
+			this.pendingFieldInsertions.delete(filePath)
+			await insertMissingFields(this, abstractFile, -1)
+		}
+	}
 
 	onunload() {
 		console.log('x------ Metadata Menu unloaded ------x');
