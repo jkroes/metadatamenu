@@ -10,6 +10,7 @@ import { DEFAULT_SETTINGS } from "./MetadataMenuSettings";
 import { openSettings } from "src/fields/base/BaseSetting";
 import { buildEmptyField } from "src/fields/Field";
 import { MultiDisplayType } from "src/fields/Fields";
+import { IconSuggestModal } from "src/fileClass/views/settingsViewComponents/suggestModals";
 
 type Group = SettingGroup | PresetFieldsSettingGroup | FileClassSettingGroup
 
@@ -528,15 +529,29 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			defaultIconSave.removeCta()
 		})
 		const iconManagerContainer = classFilesSettings.containerEl.createDiv({ cls: "icon" })
+		let defaultIconTextCb: import("obsidian").TextComponent
 		const defaultIconSetting = new Setting(classFilesSettings.containerEl)
 			.setName("Default Icon")
 			.setDesc("Choose a default icon for fileclasses from lucide.dev library")
 			.addText(cb => {
+				defaultIconTextCb = cb
 				cb.setValue(this.plugin.settings.fileClassIcon || DEFAULT_SETTINGS.fileClassIcon)
 					.onChange((value) => {
 						this.newIcon = value
 						setIcon(iconManagerContainer, value);
 						defaultIconSave.setCta()
+					})
+			})
+			.addButton(btn => {
+				btn.setIcon("search")
+					.setTooltip("Browse icons")
+					.onClick(() => {
+						new IconSuggestModal(this.app, (icon) => {
+							defaultIconTextCb.setValue(icon)
+							this.newIcon = icon
+							setIcon(iconManagerContainer, icon)
+							defaultIconSave.setCta()
+						}).open()
 					})
 			})
 		setIcon(iconManagerContainer, this.plugin.settings.fileClassIcon || DEFAULT_SETTINGS.fileClassIcon);
