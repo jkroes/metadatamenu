@@ -635,6 +635,21 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		autoInsertFieldsAtFileCreation.settingEl.addClass("no-border");
 		autoInsertFieldsAtFileCreation.controlEl.addClass("full-width");
 
+		/* Move or tag on fileClass selection */
+
+		const moveOrTagOnFileClassSelection = new Setting(classFilesSettings.containerEl)
+			.setName('Move or tag on fileClass selection')
+			.setDesc('When a fileClass is selected at file creation, move the file to the fileClass folder and/or apply the fileClass tag (only when a single folder or tag is configured)')
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.moveOrTagOnFileClassSelection);
+				cb.onChange(value => {
+					this.plugin.settings.moveOrTagOnFileClassSelection = value;
+					this.plugin.saveSettings();
+				})
+			})
+		moveOrTagOnFileClassSelection.settingEl.addClass("no-border");
+		moveOrTagOnFileClassSelection.controlEl.addClass("full-width");
+
 		/* Fileclass selector in modal*/
 
 		const showFileClassSelectInModal = new Setting(classFilesSettings.containerEl)

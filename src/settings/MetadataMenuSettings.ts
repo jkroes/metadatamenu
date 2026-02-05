@@ -37,6 +37,7 @@ export interface MetadataMenuSettings {
 	chooseFileClassAtFileCreation: boolean;
 	autoInsertFieldsAtFileClassInsertion: boolean;
 	autoInsertFieldsAtFileCreation: boolean;
+	moveOrTagOnFileClassSelection: boolean;
 	fileClassIcon: string;
 	isAutoCalculationEnabled: boolean;
 	disableDataviewPrompt: boolean;
@@ -73,6 +74,7 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	chooseFileClassAtFileCreation: false,
 	autoInsertFieldsAtFileClassInsertion: false,
 	autoInsertFieldsAtFileCreation: false,
+	moveOrTagOnFileClassSelection: false,
 	fileClassIcon: "package",
 	isAutoCalculationEnabled: true,
 	disableDataviewPrompt: false,

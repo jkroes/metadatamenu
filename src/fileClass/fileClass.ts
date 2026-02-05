@@ -1,6 +1,6 @@
 import { FileClassAttribute } from "./fileClassAttribute";
 import MetadataMenu from "main";
-import { Notice, setIcon, SuggestModal, TFile } from "obsidian";
+import { Notice, normalizePath, setIcon, SuggestModal, TFile } from "obsidian";
 import { capitalize } from "src/utils/textUtils";
 import { postValues } from "src/commands/postValues";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
@@ -121,6 +121,47 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
         await postValues(this.plugin, [{ indexedPath: `fileclass-field-${fileClassAlias}`, payload: { value: newValue } }], this.file, -1)
         if (this.plugin.settings.autoInsertFieldsAtFileClassInsertion) {
             insertMissingFields(this.plugin, this.file, -1)
+        }
+        if (this.plugin.settings.moveOrTagOnFileClassSelection) {
+            await this.moveOrTagFile(value)
+        }
+    }
+
+    private async moveOrTagFile(fileClassName: string) {
+        const fileClass = this.plugin.fieldIndex.fileClassesName.get(fileClassName)
+        if (!fileClass) return
+        const options = fileClass.getFileClassOptions()
+
+        // Move to folder if exactly 1 filesPaths entry and file isn't already there
+        const filesPaths = options.filesPaths || []
+        if (filesPaths.length === 1) {
+            const targetFolder = filesPaths[0].replace(/\/?$/, '/')
+            if (!this.file.path.startsWith(targetFolder)) {
+                const newPath = normalizePath(targetFolder + this.file.name)
+                try {
+                    if (!this.plugin.app.vault.getAbstractFileByPath(normalizePath(targetFolder))) {
+                        await this.plugin.app.vault.createFolder(normalizePath(targetFolder))
+                    }
+                    await this.plugin.app.vault.rename(this.file, newPath)
+                } catch (e) {
+                    console.error(`Metadata Menu: failed to move file to ${newPath}`, e)
+                }
+            }
+        }
+
+        // Add tag if exactly 1 effective tag and file doesn't already have it
+        const effectiveTags: string[] = [...(options.tagNames || [])]
+        if (options.mapWithTag && !fileClassName.includes(" ") && !effectiveTags.includes(fileClassName)) {
+            effectiveTags.push(fileClassName)
+        }
+        if (effectiveTags.length === 1) {
+            const tag = effectiveTags[0]
+            await this.plugin.app.fileManager.processFrontMatter(this.file, (fm) => {
+                const existing: string[] = Array.isArray(fm.tags) ? fm.tags : fm.tags ? [fm.tags] : []
+                if (!existing.includes(tag)) {
+                    fm.tags = [...existing, tag]
+                }
+            })
         }
     }
 }
