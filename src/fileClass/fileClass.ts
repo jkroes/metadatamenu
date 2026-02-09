@@ -2,13 +2,11 @@ import { FileClassAttribute } from "./fileClassAttribute";
 import MetadataMenu from "main";
 import { Notice, normalizePath, setIcon, SuggestModal, TFile } from "obsidian";
 import { capitalize } from "src/utils/textUtils";
-import { postValues } from "src/commands/postValues";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
 import { Note } from "src/note/note";
 import FieldIndex from "src/index/FieldIndex";
 import { MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
 import { SavedView } from "./views/tableViewComponents/saveViewModal";
-import { insertMissingFields } from "src/commands/insertMissingFields";
 import { compareArrays } from "src/utils/array";
 import { FieldType, FieldType as IFieldType, MultiDisplayType, fieldTypes } from "src/fields/Fields"
 import { Field, getNewFieldId, stringToBoolean, FieldCommand } from "src/fields/Field";
@@ -111,41 +109,58 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
         el.setAttr("id", `fileclass-${value}-add-choice`)
     }
 
-    onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
-        this.insertFileClassToFile(item)
+    async onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
+        await this.insertFileClassToFile(item)
+        this.close()
     }
     async insertFileClassToFile(value: string) {
-        const fileClassAlias = this.plugin.settings.fileClassAlias
-        const currentFileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path)
-        const newValue = currentFileClasses ? [...currentFileClasses.map(fc => fc.name), value].join(", ") : value
-        await postValues(this.plugin, [{ indexedPath: `fileclass-field-${fileClassAlias}`, payload: { value: newValue } }], this.file, -1)
-        if (this.plugin.settings.autoInsertFieldsAtFileClassInsertion) {
-            insertMissingFields(this.plugin, this.file, -1)
-        }
-        if (this.plugin.settings.moveOrTagOnFileClassSelection) {
-            await this.moveOrTagFile(value)
+        const wasAssociated = await this.moveOrTagFile(value)
+        if (wasAssociated && this.plugin.settings.autoInsertFieldsAtFileCreation) {
+            this.plugin.pendingFieldInsertions.add(this.file.path)
         }
     }
 
-    private async moveOrTagFile(fileClassName: string) {
+    private async moveOrTagFile(fileClassName: string): Promise<boolean> {
         const fileClass = this.plugin.fieldIndex.fileClassesName.get(fileClassName)
-        if (!fileClass) return
+        if (!fileClass) return false
         const options = fileClass.getFileClassOptions()
+        let wasAssociated = false
 
         // Move to folder if exactly 1 filesPaths entry and file isn't already there
         const filesPaths = options.filesPaths || []
         if (filesPaths.length === 1) {
             const targetFolder = filesPaths[0].replace(/\/?$/, '/')
             if (!this.file.path.startsWith(targetFolder)) {
-                const newPath = normalizePath(targetFolder + this.file.name)
+                // Create folder if needed
+                if (!this.plugin.app.vault.getAbstractFileByPath(normalizePath(targetFolder))) {
+                    await this.plugin.app.vault.createFolder(normalizePath(targetFolder))
+                }
+
+                // Find unique filename (handle duplicates like Obsidian does)
+                // Strip any existing Obsidian auto-increment pattern (e.g., "Untitled 1" → "Untitled")
+                let baseName = this.file.basename
+                const autoIncrementMatch = baseName.match(/^(.+?)\s+(\d+)$/)
+                if (autoIncrementMatch) {
+                    baseName = autoIncrementMatch[1]
+                }
+
+                const extension = this.file.extension
+                let newPath = normalizePath(targetFolder + baseName + `.${extension}`)
+                let counter = 1
+
+                while (this.plugin.app.vault.getAbstractFileByPath(newPath)) {
+                    newPath = normalizePath(targetFolder + baseName + ` ${counter}.${extension}`)
+                    counter++
+                }
+
                 try {
-                    if (!this.plugin.app.vault.getAbstractFileByPath(normalizePath(targetFolder))) {
-                        await this.plugin.app.vault.createFolder(normalizePath(targetFolder))
-                    }
                     await this.plugin.app.vault.rename(this.file, newPath)
+                    wasAssociated = true
                 } catch (e) {
                     console.error(`Metadata Menu: failed to move file to ${newPath}`, e)
                 }
+            } else {
+                wasAssociated = true
             }
         }
 
@@ -156,13 +171,22 @@ export class AddFileClassToFileModal extends SuggestModal<string> {
         }
         if (effectiveTags.length === 1) {
             const tag = effectiveTags[0]
+            let tagAdded = false
             await this.plugin.app.fileManager.processFrontMatter(this.file, (fm) => {
                 const existing: string[] = Array.isArray(fm.tags) ? fm.tags : fm.tags ? [fm.tags] : []
                 if (!existing.includes(tag)) {
                     fm.tags = [...existing, tag]
+                    tagAdded = true
+                } else {
+                    tagAdded = true
                 }
             })
+            if (tagAdded) {
+                wasAssociated = true
+            }
         }
+
+        return wasAssociated
     }
 }
 class FileClass {
@@ -223,7 +247,7 @@ class FileClass {
             return file;
         } else {
             const error = new Error(
-                `no file named <${this.name}.md> in <${filesClassPath}> folder to match <${this.plugin.settings.fileClassAlias}: ${this.name}> in one of these notes`
+                `no file named <${this.name}.md> in <${filesClassPath}> folder to match fileClass <${this.name}>`
             );
             throw error;
         }
