@@ -173,7 +173,6 @@ class ButtonDisplaySetting extends Setting {
 export default class MetadataMenuSettingTab extends PluginSettingTab {
 	private plugin: MetadataMenu;
 	private newFileClassesPath: string | null;
-	private newFileClassAlias: string
 	private newTableViewMaxRecords: number
 	private newIcon: string
 	public groups: SettingGroup[] = []
@@ -182,7 +181,6 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 	constructor(plugin: MetadataMenu) {
 		super(plugin.app, plugin);
 		this.plugin = plugin;
-		this.newFileClassAlias = this.plugin.settings.fileClassAlias
 		this.newFileClassesPath = this.plugin.settings.classFilesPath
 		this.newTableViewMaxRecords = this.plugin.settings.tableViewMaxRecords
 		this.newIcon = this.plugin.settings.fileClassIcon
@@ -430,7 +428,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		const classFilesSettings = new FileClassSettingGroup(this,
 			'fileclass-settings',
 			'FileClass settings',
-			"Manage fileClass folder and alias. " +
+			"Manage fileClass folder. " +
 			"When a note has a fileClass defined, fileClass field properties will override " +
 			"global preset fields settings for the same field name",
 			true
@@ -462,33 +460,6 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		path.settingEl.addClass("narrow-title");
 		path.controlEl.addClass("full-width");
 		path.settingEl.appendChild(cFS.fileClassesFolderSaveButton.buttonEl)
-
-		const aliasSaveButton = new ButtonComponent(classFilesSettings.containerEl)
-		aliasSaveButton.buttonEl.addClass("save")
-		aliasSaveButton.setIcon("save")
-		aliasSaveButton.onClick(async () => {
-			this.plugin.settings.fileClassAlias = this.newFileClassAlias
-			await this.plugin.saveSettings()
-			aliasSaveButton.removeCta()
-		})
-
-		const alias = new Setting(classFilesSettings.containerEl)
-			.setName('FileClass field alias')
-			.setDesc('Choose another name for fileClass field in frontmatter (example: Category, type, ...')
-			.addText((text) => {
-				text
-					.setValue(this.plugin.settings.fileClassAlias)
-					.onChange(async (value) => {
-						this.newFileClassAlias = value || "fileClass";
-						aliasSaveButton.setCta()
-					});
-			})
-		alias.settingEl.addClass("no-border");
-		alias.settingEl.addClass("narrow-title");
-		alias.controlEl.addClass("full-width");
-		alias.settingEl.appendChild(aliasSaveButton.buttonEl)
-
-		/* 
 
 		/* Set global fileClass*/
 		const global = new Setting(classFilesSettings.containerEl)
@@ -605,21 +576,6 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		chooseFileClassAtFileCreation.controlEl.addClass("full-width");
 
 
-		/* Choose fileclass at file creation Fileclass selector in modal*/
-
-		const autoInsertFieldsAtFileClassInsertion = new Setting(classFilesSettings.containerEl)
-			.setName('Insert fileClass fields')
-			.setDesc('Includes fileClass in frontmatter after fileClass choice')
-			.addToggle(cb => {
-				cb.setValue(this.plugin.settings.autoInsertFieldsAtFileClassInsertion);
-				cb.onChange(value => {
-					this.plugin.settings.autoInsertFieldsAtFileClassInsertion = value;
-					this.plugin.saveSettings();
-				})
-			})
-		autoInsertFieldsAtFileClassInsertion.settingEl.addClass("no-border");
-		autoInsertFieldsAtFileClassInsertion.controlEl.addClass("full-width");
-
 		/* Auto-insert fields at file creation for path-matched fileClasses */
 
 		const autoInsertFieldsAtFileCreation = new Setting(classFilesSettings.containerEl)
@@ -635,35 +591,6 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		autoInsertFieldsAtFileCreation.settingEl.addClass("no-border");
 		autoInsertFieldsAtFileCreation.controlEl.addClass("full-width");
 
-		/* Move or tag on fileClass selection */
-
-		const moveOrTagOnFileClassSelection = new Setting(classFilesSettings.containerEl)
-			.setName('Move or tag on fileClass selection')
-			.setDesc('When a fileClass is selected at file creation, move the file to the fileClass folder and/or apply the fileClass tag (only when a single folder or tag is configured)')
-			.addToggle(cb => {
-				cb.setValue(this.plugin.settings.moveOrTagOnFileClassSelection);
-				cb.onChange(value => {
-					this.plugin.settings.moveOrTagOnFileClassSelection = value;
-					this.plugin.saveSettings();
-				})
-			})
-		moveOrTagOnFileClassSelection.settingEl.addClass("no-border");
-		moveOrTagOnFileClassSelection.controlEl.addClass("full-width");
-
-		/* Fileclass selector in modal*/
-
-		const showFileClassSelectInModal = new Setting(classFilesSettings.containerEl)
-			.setName('Fileclass Select')
-			.setDesc('Show fileclass select option in note fields modals')
-			.addToggle(cb => {
-				cb.setValue(this.plugin.settings.showFileClassSelectInModal);
-				cb.onChange(value => {
-					this.plugin.settings.showFileClassSelectInModal = value;
-					this.plugin.saveSettings();
-				})
-			})
-		showFileClassSelectInModal.settingEl.addClass("no-border");
-		showFileClassSelectInModal.controlEl.addClass("full-width");
 		//#endregion
 		//#region button display
 		/* 

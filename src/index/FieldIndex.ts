@@ -151,7 +151,6 @@ export default class FieldIndex extends FieldIndexBuilder {
         this.resolveFileClassMatchingFilesPaths();
         this.resolveFileClassMatchingBookmarksGroups();
         this.resolveFileClassQueries();
-        this.getFilesFieldsFromFileClass();
         const indexedFiles = this.getFilesFields();
         await this.getCanvasesFiles();
         await this.getValuesListNotePathValues();
@@ -472,38 +471,6 @@ export default class FieldIndex extends FieldIndexBuilder {
         })
     }
 
-    private getFilesFieldsFromFileClass(): void {
-
-        this.indexableFiles().forEach(f => {
-            const fileFileClassesNames = [];
-            const fileClassesCache: string[] | string = this.plugin.app.metadataCache.getFileCache(f)?.frontmatter?.[this.settings.fileClassAlias]
-            if (fileClassesCache) {
-                Array.isArray(fileClassesCache) ?
-                    fileFileClassesNames.push(...fileClassesCache) :
-                    fileFileClassesNames.push(...fileClassesCache.split(',').map(fcn => fcn.trim()))
-                fileFileClassesNames.forEach(fileFileClassName => {
-                    const fileClass = this.fileClassesName.get(fileFileClassName)
-                    if (fileClass) {
-                        this.filesFileClasses.set(f.path, [...new Set([...(this.filesFileClasses.get(f.path) || []), fileClass])])
-                        this.filesFileClassesNames.set(f.path, [...new Set([...(this.filesFileClassesNames.get(f.path) || []), fileClass.name])])
-                        const fileClassesFieldsFromFile = this.fileClassesFields.get(fileFileClassName)
-                        const currentFields = this.filesFieldsFromInnerFileClasses.get(f.path)
-
-                        if (fileClassesFieldsFromFile) {
-                            const newFields = [...fileClassesFieldsFromFile]
-                            const filteredCurrentFields = currentFields?.filter(field =>
-                                !newFields.map(f => f.id).includes(field.id) &&
-                                !fileClass.options?.excludes?.map(attr => attr.id).includes(field.id)
-                            ) || []
-                            newFields.push(...filteredCurrentFields)
-                            this.filesFieldsFromInnerFileClasses.set(f.path, newFields)
-                        } else { this.filesFieldsFromInnerFileClasses.set(f.path, []); }
-                    } else { this.filesFieldsFromInnerFileClasses.set(f.path, []); }
-                })
-            } else { this.filesFieldsFromInnerFileClasses.set(f.path, []); }
-        })
-    }
-
     private isLookupOrFormula(field: Field): boolean {
         return ["Lookup", "Formula"].includes(field.type)
     }
@@ -513,13 +480,12 @@ export default class FieldIndex extends FieldIndexBuilder {
         associates fields to each indexable files according to the mapping
         between the file and the fileClasses
         Priority order:
-        1. Inner fileClass
-        2.1 Tag match
-        2.2 Path match
-        2.3 BookmarkGroup match
-        3. fileClassQuery match
-        4. Global fileClass
-        5. settings preset fields
+        1. Tag match
+        2. Path match
+        3. BookmarkGroup match
+        4. fileClassQuery match
+        5. Global fileClass
+        6. settings preset fields
 
         compares the fieldSet of the file and updates filesFieldsLastChange accordingly
         */
@@ -531,7 +497,6 @@ export default class FieldIndex extends FieldIndexBuilder {
             )
 
         filesToIndex.forEach(f => {
-            const fileFieldsFromInnerFileClasses = this.filesFieldsFromInnerFileClasses.get(f.path)
             const fileFieldsFromQuery = this.filesFieldsFromFileClassQueries.get(f.path);
             const fileFieldsFromTag = this.filesFieldsFromTags.get(f.path);
             const fileFieldsFromPath = this.filesFieldsFromFilesPaths.get(f.path)
@@ -539,14 +504,12 @@ export default class FieldIndex extends FieldIndexBuilder {
             let fileFields: Field[]
             const previousFileFields: string[] | undefined = this.previousFilesFields.get(f.path)?.map(_f => _f.id) || []
             if (
-                fileFieldsFromInnerFileClasses?.length ||
                 fileFieldsFromQuery?.length ||
                 fileFieldsFromTag?.length ||
                 fileFieldsFromPath?.length ||
                 fileFieldsFromGroup?.length
             ) {
-                fileFields = fileFieldsFromInnerFileClasses || [];
-                fileFields.push(...(fileFieldsFromTag || []).filter(field => !fileFields.map(f => f.id).includes(field.id)))
+                fileFields = fileFieldsFromTag || [];
                 fileFields.push(...(fileFieldsFromPath || []).filter(field => !fileFields.map(f => f.id).includes(field.id)))
                 fileFields.push(...(fileFieldsFromGroup || []).filter(field => !fileFields.map(f => f.id).includes(field.id)))
                 fileFields.push(...(fileFieldsFromQuery || []).filter(field => !fileFields.map(f => f.id).includes(field.id)))

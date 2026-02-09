@@ -39,7 +39,7 @@ export class FileClassCodeBlockManager extends MarkdownRenderChild {
         container.createDiv()
         try {
             const content = parseYaml(source)
-            const fileClassName = content[this.plugin.settings.fileClassAlias]
+            const fileClassName = content["fileClass"]
             const selectedView = content.view?.toString() as string | undefined
             this.fileClass = this.plugin.fieldIndex.fileClassesName.get(fileClassName)
             if (this.fileClass) {

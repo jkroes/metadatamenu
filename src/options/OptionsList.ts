@@ -2,7 +2,6 @@ import MetadataMenu from "main";
 import { MarkdownView, Menu, Notice, TFile } from "obsidian";
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import NoteFieldsComponent from "src/components/FieldsModal";
-import { AddFileClassToFileModal } from "src/fileClass/fileClass";
 import AddNewFileClassModal from "src/modals/AddNewFileClassModal";
 import { LineNode } from "src/note/lineNode";
 import { Note } from "src/note/note";
@@ -103,7 +102,6 @@ export default class OptionsList {
 				const fileClassOptionsList = new FileClassOptionsList(this.plugin, fileClass.getClassFile(), location, this.file)
 				fileClassOptionsList.createExtraOptionList(false);
 			})
-			this.addFileClassToFileOption();
 			this.addNewFileClassOption();
 		}
 	}
@@ -149,7 +147,6 @@ export default class OptionsList {
 					icon: "wrench"
 				})
 			})
-			this.addFileClassToFileOption();
 			this.addNewFileClassOption();
 			if (openAfterCreate) location.open();
 		}
@@ -359,26 +356,6 @@ export default class OptionsList {
 		}
 	}
 
-	private addFileClassToFileOption(): void {
-		const modal = new AddFileClassToFileModal(this.plugin, this.file)
-		const action = () => modal.open();
-		if (isMenu(this.location)) {
-			this.location.addItem((item) => {
-				item.setIcon("plus-square");
-				item.setTitle(`Add ${this.plugin.settings.fileClassAlias} to ${this.file.basename}`);
-				item.onClick(action);
-				item.setSection("metadata-menu-fileclass");
-			});
-		} else if (isSuggest(this.location)) {
-			this.location.options.push({
-				id: "add_fileclass_to_file",
-				actionLabel: `Add ${this.plugin.settings.fileClassAlias} to ${this.file.basename}`,
-				action: action,
-				icon: "package-plus"
-			})
-		};
-	}
-
 	private addNewFileClassOption(): void {
 		const modal = new AddNewFileClassModal(this.plugin);
 		const action = () => modal.open();
@@ -386,14 +363,14 @@ export default class OptionsList {
 			if (isMenu(this.location)) {
 				this.location.addItem((item) => {
 					item.setIcon("file-plus-2");
-					item.setTitle(`Add a new ${this.plugin.settings.fileClassAlias}`)
+					item.setTitle(`Add a new ${"fileClass"}`)
 					item.onClick(action);
 					item.setSection("metadata-menu-fileclass");
 				})
 			} else if (isSuggest(this.location)) {
 				this.location.options.push({
 					id: "add_new_fileclass",
-					actionLabel: `Add a new ${this.plugin.settings.fileClassAlias}`,
+					actionLabel: `Add a new ${"fileClass"}`,
 					action: action,
 					icon: "file-plus-2"
 				})

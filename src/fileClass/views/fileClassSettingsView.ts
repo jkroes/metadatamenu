@@ -74,7 +74,7 @@ export class FileClassSettingsView {
         this.fileClassSettings["mapWithTag"] = new FileClassSetting(
             settingsContainer,
             "Map with tag",
-            `Bind tags with ${this.plugin.settings.fileClassAlias}<br/>` +
+            `Bind tags with ${"fileClass"}<br/>` +
             `If Tag Names are empty this fileClass will be bound with the tag of same name`,
             (action: HTMLDivElement) => this.buildMapWithTagComponent(action)
         )
@@ -87,19 +87,19 @@ export class FileClassSettingsView {
         this.fileClassSettings["tagNames"] = new FileClassSetting(
             settingsContainer,
             "Tag Names",
-            `Names of tags to bind this ${this.plugin.settings.fileClassAlias} with`,
+            `Names of tags to bind this ${"fileClass"} with`,
             (action: HTMLDivElement) => this.buildBindingComponent(action, "tagNames", TagSuggestModal)
         )
         this.fileClassSettings["filesPaths"] = new FileClassSetting(
             settingsContainer,
             "Files paths",
-            `Paths of files to bind this ${this.plugin.settings.fileClassAlias} with`,
+            `Paths of files to bind this ${"fileClass"} with`,
             (action: HTMLDivElement) => this.buildBindingComponent(action, "filesPaths", PathSuggestModal)
         )
         this.fileClassSettings["bookmarksGroups"] = new FileClassSetting(
             settingsContainer,
             "Bookmarks groups",
-            `Names group of bookmarked files to bind this ${this.plugin.settings.fileClassAlias} with`,
+            `Names group of bookmarked files to bind this ${"fileClass"} with`,
             (action: HTMLDivElement) => this.buildBindingComponent(action, "bookmarksGroups", BookmarksGroupSuggestModal)
         )
         this.fileClassSettings["parent"] = new FileClassSetting(

@@ -136,10 +136,6 @@ function manageFieldAtCursorCommand(plugin: MetadataMenu) {
                                     const node = note.getNodeForIndexedPath(field.id)
                                     if (node) optionsList.createAndOpenNodeFieldModal(node)
                                     else new Notice("No field with definition at this position", 2000)
-                                } else if (key === plugin.settings.fileClassAlias) {
-                                    const node = note.getNodeForIndexedPath(`fileclass-field-${plugin.settings.fileClassAlias}`)
-                                    if (node) optionsList.createAndOpenNodeFieldModal(node)
-                                    else new Notice("No field with definition at this position", 2000)
                                 }
                             }
                             break;

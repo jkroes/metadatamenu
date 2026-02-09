@@ -63,7 +63,6 @@ export abstract class FieldIndexBuilder extends Component {
     public filesFieldsFromBookmarksGroups: Map<string, Field[]>;
     public filesFieldsFromFileClassQueries: Map<string, Field[]>;
     public filesFieldsFromFilesPaths: Map<string, Field[]>;
-    public filesFieldsFromInnerFileClasses: Map<string, Field[]>;
     public filesFieldsFromTags: Map<string, Field[]>;
     public filesFileClasses: Map<string, FileClass[]>;
     public filesFileClassesNames: Map<string, string[] | undefined>;
@@ -123,7 +122,6 @@ export abstract class FieldIndexBuilder extends Component {
         this.filesFieldsFromFilesPaths = new Map();
         this.filesFieldsFromBookmarksGroups = new Map();
         this.filesFieldsFromFileClassQueries = new Map();
-        this.filesFieldsFromInnerFileClasses = new Map();
         this.fileClassesPath = new Map();
         this.v1FileClassesPath = new Map();
         this.v2FileClassesPath = new Map();

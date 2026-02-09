@@ -4,6 +4,34 @@
 
 This is a fork of the [Metadata Menu](https://github.com/mdelobelle/metadatamenu) plugin for [Obsidian](https://obsidian.md/). The plugin manages note metadata (frontmatter and dataview inline fields) through context menus, modals, autocompletion, and dataview table integration. Users define typed field presets globally or per-fileClass.
 
+## Development Loop
+
+For every task, follow these steps:
+
+1. **Read source** — Understand the relevant code before changing it.
+2. **Make changes** — Edit code, create vault files (notes, FileClasses), or modify configurations as needed.
+3. **Write test instructions** — Update `test-checklist.md` with clear, step-by-step instructions for the user to verify changes:
+   ```markdown
+   ## Task: [Brief description]
+
+   ### What Changed
+   - List of files created/modified
+
+   ### Verification Steps
+   1. Build and deploy: `npm run build && cp main.js manifest.json styles.css ~/repos/obsidian-notes/.obsidian/plugins/metadata-menu/`
+   2. [Specific actions to take]
+   3. [Expected results to verify]
+   ```
+4. **Wait for user feedback** — The user will build, deploy, test, and report results. Iterate based on their feedback.
+
+## Tech Stack
+
+- **Language:** TypeScript 4.7, targeting ES6
+- **Bundler:** ESBuild
+- **CSS:** Sass/SCSS
+- **Key dependencies:** Obsidian API, CodeMirror 6, `yaml`, `@popperjs/core`
+- **Linting:** ESLint with `@typescript-eslint`
+
 ## Project Structure
 
 ```
@@ -38,14 +66,6 @@ This is a fork of the [Metadata Menu](https://github.com/mdelobelle/metadatamenu
 └── versions.json           # Version-to-Obsidian-version mapping
 ```
 
-## Tech Stack
-
-- **Language:** TypeScript 4.7, targeting ES6
-- **Bundler:** ESBuild
-- **CSS:** Sass/SCSS
-- **Key dependencies:** Obsidian API, CodeMirror 6, `yaml`, `@popperjs/core`
-- **Linting:** ESLint with `@typescript-eslint`
-
 ## Build & Development
 
 ```bash
@@ -72,6 +92,7 @@ Build output (`main.js`, `styles.css`, `manifest.json`) is automatically copied 
 
 The `MDM_DEBUG` flag controls debug logging; set via esbuild define.
 
+
 ## Testing
 
 The plugin uses a custom built-in test runner (`src/testing/runner.ts`) that runs inside Obsidian against the test vault at `test-vault-mdm/`. Tests cover settings creation, fileClass creation, and field modal interactions. There is no CLI test harness.
@@ -84,13 +105,14 @@ The plugin uses a custom built-in test runner (`src/testing/runner.ts`) that run
 - **Controls:** Multiple UI entry points — context menus, editor autocompletion, dataview tables, metadata buttons, modals
 - **API:** `MetadataMenuApi` (`src/MetadataMenuApi.ts`) exposes `getValues()`, `fieldModifier()`, `postValues()`, etc.
 
-## Key Resources
+## Resources
 
-- [Obsidian Developer Docs](https://docs.obsidian.md/Home)
-- [Obsidian Plugin Directory](https://obsidian.md/plugins)
-- [Obsidian Sample Plugin](https://github.com/obsidianmd/obsidian-sample-plugins)
-- [Original Metadata Menu Docs](https://mdelobelle.github.io/metadatamenu)
+- [Metadata Menu User Guide](https://mdelobelle.github.io/metadatamenu/)
 - [Original Metadata Menu Repo](https://github.com/mdelobelle/metadatamenu)
+- [Obsidian Developer Docs](https://docs.obsidian.md/Home)
+- [Obsidian User Guide](https://help.obsidian.md/)
+- [Obsidian Forum](https://forum.obsidian.md)
+- [Obsidian Community Plugins](https://obsidian.md/plugins)
 
 ## Notes for Claude
 

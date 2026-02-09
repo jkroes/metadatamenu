@@ -37,7 +37,7 @@ export default class MetadataMenu extends Plugin {
 	public launched: boolean = false;
 	public indexDB: IndexDatabase;
 	public codeBlockListManager: FileClassCodeBlockListManager
-	private pendingFieldInsertions: Set<string> = new Set();
+	public pendingFieldInsertions: Set<string> = new Set();
 
 	async onload(): Promise<void> {
 		console.log('+------ Metadata Menu loaded ------x-+');

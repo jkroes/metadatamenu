@@ -13,7 +13,6 @@ export interface MetadataMenuSettings {
 	globallyIgnoredFields: Array<string>;
 	classFilesPath: string | null;
 	isAutosuggestEnabled: boolean;
-	fileClassAlias: string;
 	settingsVersion?: string | number;
 	globalFileClass?: string;
 	firstDayOfWeek: number;
@@ -33,11 +32,8 @@ export interface MetadataMenuSettings {
 	fileIndexingExcludedExtensions: Array<string>;
 	fileIndexingExcludedRegex: Array<string>;
 	frontmatterOnly: boolean;
-	showFileClassSelectInModal: boolean;
 	chooseFileClassAtFileCreation: boolean;
-	autoInsertFieldsAtFileClassInsertion: boolean;
 	autoInsertFieldsAtFileCreation: boolean;
-	moveOrTagOnFileClassSelection: boolean;
 	fileClassIcon: string;
 	isAutoCalculationEnabled: boolean;
 	disableDataviewPrompt: boolean;
@@ -50,7 +46,6 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	globallyIgnoredFields: [],
 	classFilesPath: null,
 	isAutosuggestEnabled: true,
-	fileClassAlias: "fileClass",
 	settingsVersion: undefined,
 	globalFileClass: undefined,
 	firstDayOfWeek: 1,
@@ -70,11 +65,8 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	fileIndexingExcludedExtensions: [".excalidraw.md"],
 	fileIndexingExcludedRegex: [],
 	frontmatterOnly: false,
-	showFileClassSelectInModal: true,
 	chooseFileClassAtFileCreation: false,
-	autoInsertFieldsAtFileClassInsertion: false,
 	autoInsertFieldsAtFileCreation: false,
-	moveOrTagOnFileClassSelection: false,
 	fileClassIcon: "package",
 	isAutoCalculationEnabled: true,
 	disableDataviewPrompt: false,
