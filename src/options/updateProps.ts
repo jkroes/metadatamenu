@@ -12,6 +12,9 @@ function isPropView(view: MarkdownView | PropView): view is PropView {
 }
 
 const updateProps = async (plugin: MetadataMenu, view: MarkdownView | PropView, file: TFile) => {
+    // Check if file still exists before trying to build Note
+    if (!plugin.app.vault.getAbstractFileByPath(file.path)) return
+
     const optionsList = new OptionsList(plugin, file, "ManageAtCursorCommand")
     const note = new Note(plugin, file)
     await note.build();
@@ -65,6 +68,8 @@ export async function updatePropertiesSection(plugin: MetadataMenu) {
     const currentView = plugin.app.workspace.getActiveViewOfType(MarkdownView)
     if (currentView && currentView.file) {
         const file = currentView.file
+        // Check if file still exists before building Note
+        if (!plugin.app.vault.getAbstractFileByPath(file.path)) return
         const note = new Note(plugin, file)
         await note.build()
         plugin.indexStatus.checkForUpdate(currentView)
@@ -98,11 +103,14 @@ function getPropView(plugin: MetadataMenu): PropView | undefined {
 export async function updatePropertiesPane(plugin: MetadataMenu) {
     var propView: PropView | undefined
     if (propView && propView.file.path == plugin.app.workspace.getActiveFile()?.path) {
-        updateProps(plugin, propView, propView.file)
+        // Check if file still exists before updating
+        if (plugin.app.vault.getAbstractFileByPath(propView.file.path)) {
+            updateProps(plugin, propView, propView.file)
+        }
     } else {
         await setTimeout(300);
         propView = getPropView(plugin)
-        if (propView) {
+        if (propView && plugin.app.vault.getAbstractFileByPath(propView.file.path)) {
             updateProps(plugin, propView, propView.file)
         }
     }

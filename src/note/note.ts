@@ -194,14 +194,25 @@ export class Note {
     }
 
     public async build() {
-        const content = await this.plugin.app.vault.read(this.file)
-        const lines = content.split("\n")
+        // Check if file still exists before trying to read it
+        if (!this.plugin.app.vault.getAbstractFileByPath(this.file.path)) {
+            MDM_DEBUG && console.log(`Note.build: File ${this.file.path} no longer exists, skipping build`)
+            return
+        }
 
-        this.buildSections(content)
-        const frontmatterEnd = this.frontmatterEnd()
-        for (const [i, rawLine] of lines.entries()) {
-            const position = !!frontmatterEnd && i <= frontmatterEnd ? "yaml" : "inline"
-            new Line(this.plugin, this, position, rawLine, i)
+        try {
+            const content = await this.plugin.app.vault.read(this.file)
+            const lines = content.split("\n")
+
+            this.buildSections(content)
+            const frontmatterEnd = this.frontmatterEnd()
+            for (const [i, rawLine] of lines.entries()) {
+                const position = !!frontmatterEnd && i <= frontmatterEnd ? "yaml" : "inline"
+                new Line(this.plugin, this, position, rawLine, i)
+            }
+        } catch (error) {
+            // File may have been deleted during read operation
+            MDM_DEBUG && console.log(`Note.build: Error reading file ${this.file.path}:`, error)
         }
     }
 
