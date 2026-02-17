@@ -25,19 +25,6 @@ export default class FieldIndex extends FieldIndexBuilder {
     async onload(): Promise<void> {
 
         this.registerEvent(
-            this.bookmarks.instance.on("changed", async () => {
-                if (this.bookmarks.enabled) {
-                    const updateTime = this.bookmarks.lastSave
-                    if (this.lastBookmarkChange === undefined || updateTime > this.lastBookmarkChange) {
-                        await this.indexFields()
-                        this.lastBookmarkChange = updateTime
-                        this.plugin.app.metadataCache.trigger("metadata-menu:indexed"); //to rebuild the button
-                    }
-                }
-            })
-        )
-
-        this.registerEvent(
             this.plugin.app.vault.on("modify", async (file) => {
                 if (file instanceof TFile) {
                     if (file.extension === "md") {
