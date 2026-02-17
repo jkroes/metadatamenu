@@ -128,12 +128,12 @@ export default class MetadataMenu extends Plugin {
 		this.indexDB = this.addChild(new IndexDatabase(this))
 		this.extraButton = this.addChild(new ExtraButton(this))
 		if (this.settings.enableFileExplorer) this.addChild(new FileClassFolderButton(this))
+		this.addChild(new PropertyPatchManager(this))
 
 		// Wait for workspace to be ready before indexing
 		this.app.workspace.onLayoutReady(async () => {
 			await this.fieldIndex.fullIndex()
 			this.launched = true
-			this.addChild(new PropertyPatchManager(this));
 			addCommands(this)
 
 			// Process all already-open files

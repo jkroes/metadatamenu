@@ -4,9 +4,10 @@ import { getFiles } from "../../fields/models/abstractModels/AbstractFile";
 export class FilePropertySuggest extends AbstractInputSuggest<TFile> {
     constructor(
         app: App,
-        private inputElement: HTMLInputElement,
+        private inputElement: HTMLInputElement | HTMLDivElement,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         private field: any,
+        private onChange: (value: unknown) => void,
     ) {
         super(app, inputElement);
         inputElement.addEventListener("focus", () => inputElement.dispatchEvent(new Event("input")));
@@ -29,8 +30,7 @@ export class FilePropertySuggest extends AbstractInputSuggest<TFile> {
     }
 
     selectSuggestion(file: TFile): void {
-        this.inputElement.value = `[[${file.basename}]]`;
-        this.inputElement.trigger("input");
+        this.onChange(`[[${file.basename}]]`);
         this.close();
     }
 }

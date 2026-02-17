@@ -131,6 +131,9 @@ declare module "obsidian" {
     }
     interface App {
         appId?: string;
+        metadataTypeManager: {
+            registeredTypeWidgets: Record<string, any>;
+        };
         plugins: {
             enabledPlugins: Set<string>;
             plugins: {

@@ -4,9 +4,10 @@ import { getOptionsList } from "../../fields/models/abstractModels/AbstractList"
 export class MultiPropertySuggest extends AbstractInputSuggest<string> {
     constructor(
         app: App,
-        private inputElement: HTMLInputElement,
+        private inputElement: HTMLInputElement | HTMLDivElement,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         private field: any,
+        private onChange: (value: unknown) => void,
     ) {
         super(app, inputElement);
         inputElement.addEventListener("focus", () => inputElement.dispatchEvent(new Event("input")));
@@ -27,8 +28,7 @@ export class MultiPropertySuggest extends AbstractInputSuggest<string> {
     }
 
     selectSuggestion(value: string): void {
-        this.inputElement.value = value;
-        this.inputElement.trigger("input");
+        this.onChange(value);
         this.close();
     }
 }
