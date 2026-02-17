@@ -1,6 +1,7 @@
-import { Component } from "obsidian";
+import { Component, TFile } from "obsidian";
 import { around } from "monkey-around";
 import type MetadataMenu from "../../main";
+import { SelectPropertySuggest } from "./suggest/SelectPropertySuggest";
 
 export class PropertyPatchManager extends Component {
     private uninstallers: Array<() => void> = [];
@@ -36,6 +37,21 @@ export class PropertyPatchManager extends Component {
             render(originalRender: Function) {
                 return function(this: any, containerEl: HTMLElement, value: unknown, ctx: any) {
                     const component = originalRender.call(this, containerEl, value, ctx);
+
+                    const inputEl = containerEl.querySelector("input") as HTMLInputElement | null;
+                    if (!inputEl) return component;
+
+                    const fields = plugin.fieldIndex.filesFields.get(ctx.sourcePath);
+                    const field = fields?.find((f: any) => f.name === ctx.key);
+                    if (!field) return component;
+
+                    const targetFile = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
+                    if (!(targetFile instanceof TFile)) return component;
+
+                    if (field.type === "Select") {
+                        new SelectPropertySuggest(plugin.app, inputEl, field);
+                    }
+
                     return component;
                 };
             }
