@@ -36,6 +36,7 @@ This is a fork of the [Metadata Menu](https://github.com/mdelobelle/metadatamenu
 │   ├── assets/css/         # SCSS stylesheets (12 files)
 │   ├── types/              # TypeScript type definitions
 │   ├── typings/            # Ambient TypeScript declarations (globals.d.ts, types.d.ts)
+│   ├── propertyWidgets/    # Property panel monkey-patching (PropertyPatchManager + suggest classes)
 │   └── MetadataMenuApi.ts  # Public API
 ├── main.ts                 # Plugin entry point
 ├── docs/                   # MkDocs documentation (fields, fileclasses, api, etc.)
@@ -80,8 +81,11 @@ After rebuilding, reload the plugin inside Obsidian (Settings → Community Plug
 
 ## Notes for Claude
 
+- When adding components that inject DOM elements (file explorer, properties panel, etc.), always add corresponding cleanup in `onunload()` in `main.ts`. The current `onunload()` is minimal — missing cleanup causes stale UI after plugin disable.
+- Use optional chaining (`?.`) when accessing Obsidian internal view state (e.g. `explorerView?.fileItems?.[path]`) in unload/cleanup paths — Obsidian may have already torn down view internals by that point.
 - Commands run in a sandbox by default. If a command fails with a permission or "operation not permitted" error, retry with `dangerouslyDisableSandbox: true`. Known sandbox incompatibilities:
   - `git commit -m "$(cat <<'EOF' ... EOF)"` — here-document temp file creation always fails in sandbox; use a plain `-m "..."` string instead.
+  - `esbuild.config.mjs` copyPlugin has an async/process.exit race condition — `npm run build` may not copy `main.js` reliably; always use an explicit `cp main.js test-vault-mdm/.obsidian/plugins/metadata-menu/main.js` with `dangerouslyDisableSandbox: true` instead.
 - Field type implementations follow a consistent pattern — check an existing model in `src/fields/models/` before adding or modifying one.
 - FileClass views (`src/fileClass/views/`) contain substantial UI logic including table view components with filtering and sorting.
 - Settings migration logic lives in `src/settings/migrateSetting.ts` — account for it when changing settings interfaces.
