@@ -1,11 +1,11 @@
 ---
 fileClass: Fileclass1
-activities: 
+activities: [⛷]
 calories: test
-distance: 
-time: 
+distance:
+time:
 push-ups: 10
-pull-ups: 
-squats: 
-bpm: 
+pull-ups:
+squats:
+bpm:
 ---
