@@ -3,6 +3,7 @@ import { around } from "monkey-around";
 import type MetadataMenu from "../../main";
 import { SelectPropertySuggest } from "./suggest/SelectPropertySuggest";
 import { FilePropertySuggest } from "./suggest/FilePropertySuggest";
+import { MultiPropertySuggest } from "./suggest/MultiPropertySuggest";
 
 export class PropertyPatchManager extends Component {
     private uninstallers: Array<() => void> = [];
@@ -77,8 +78,21 @@ export class PropertyPatchManager extends Component {
         const uninstall = around(listWidget, {
             render(originalRender: Function) {
                 return function(this: any, containerEl: HTMLElement, value: unknown, ctx: any) {
-                    // Placeholder — real logic added in Tasks 5–6 (Multi, MultiFile)
                     const component = originalRender.call(this, containerEl, value, ctx);
+
+                    const inputEl = containerEl.querySelector("input") as HTMLInputElement | null;
+                    if (!inputEl) return component;
+
+                    const fields = plugin.fieldIndex.filesFields.get(ctx.sourcePath);
+                    const field = fields?.find((f: any) => f.name === ctx.key);
+                    if (!field) return component;
+
+                    if (!(plugin.app.vault.getAbstractFileByPath(ctx.sourcePath) instanceof TFile)) return component;
+
+                    if (field.type === "Multi") {
+                        new MultiPropertySuggest(plugin.app, inputEl, field);
+                    }
+
                     return component;
                 };
             }
