@@ -4,6 +4,7 @@ import type MetadataMenu from "../../main";
 import { SelectPropertySuggest } from "./suggest/SelectPropertySuggest";
 import { FilePropertySuggest } from "./suggest/FilePropertySuggest";
 import { MultiPropertySuggest } from "./suggest/MultiPropertySuggest";
+import { MultiFilePropertySuggest } from "./suggest/MultiFilePropertySuggest";
 
 export class PropertyPatchManager extends Component {
     private uninstallers: Array<() => void> = [];
@@ -91,6 +92,8 @@ export class PropertyPatchManager extends Component {
 
                     if (field.type === "Multi") {
                         new MultiPropertySuggest(plugin.app, inputEl, field);
+                    } else if (field.type === "MultiFile") {
+                        new MultiFilePropertySuggest(plugin.app, inputEl, field);
                     }
 
                     return component;
