@@ -1,7 +1,6 @@
 import { Notice, TFile } from "obsidian"
 import MetadataMenu from "main"
-import { FileClass, createFileClass, getFileClassNameFromPath, indexFileClass } from "src/fileClass/fileClass";
-import FileClassQuery from "src/fileClass/FileClassQuery";
+import { FileClass, getFileClassNameFromPath, indexFileClass } from "src/fileClass/fileClass";
 import FieldSetting from "src/settings/FieldSetting";
 import { resolveLookups } from "src/commands/resolveLookups";
 import { cleanRemovedLookupItemsFromIndex, updateLookups } from "src/commands/updateLookups";
@@ -10,7 +9,6 @@ import { Status as LookupStatus, Status } from "src/types/lookupTypes";
 import { updateCanvas, updateCanvasAfterFileClass } from "src/commands/updateCanvas";
 import { CanvasData } from "obsidian/canvas";
 import { V1FileClassMigration } from "src/fileClass/fileClassMigration";
-import { BookmarkItem } from "src/typings/types";
 import { IndexedFieldsPayload, postValues } from "src/commands/postValues";
 import { cFileWithGroups, cFileWithTags, FieldIndexBuilder, FieldsPayloadToProcess, IndexedExistingField } from "./FieldIndexBuilder";
 import { FileClassViewManager } from "src/components/FileClassViewManager";
@@ -148,10 +146,6 @@ export default class FieldIndex extends FieldIndexBuilder {
         this.getFileClasses();
         this.getLookupQueries();
         this.resolveFileClassMatchingTags();
-        this.resolveFileClassMatchingFilesPaths();
-        this.resolveFileClassMatchingBookmarksGroups();
-        this.resolveFileClassQueries();
-        this.getFilesFieldsFromFileClass();
         const indexedFiles = this.getFilesFields();
         await this.getCanvasesFiles();
         await this.getValuesListNotePathValues();
@@ -311,12 +305,6 @@ export default class FieldIndex extends FieldIndexBuilder {
 
     private getFileClasses(): void {
         this.indexableFileClasses().forEach(f => indexFileClass(this, f));
-        const globalFileClass = this.settings.globalFileClass
-        if (!globalFileClass) {
-            this.fieldsFromGlobalFileClass = []
-        } else {
-            this.fieldsFromGlobalFileClass = this.fileClassesFields.get(globalFileClass) || []
-        }
         (async () => {
             await Promise.all(this.openFileClassManagerAfterIndex.map(async fileClassName => {
                 const fileClass = this.fileClassesName.get(fileClassName)
@@ -405,105 +393,6 @@ export default class FieldIndex extends FieldIndexBuilder {
         })
     }
 
-    private resolveFileClassMatchingFilesPaths(): void {
-
-        if (!this.filesPathsMatchingFileClasses.size) return
-        const paths = [...this.filesPathsMatchingFileClasses.keys()]
-        this.indexableFiles()
-            .filter(_f => _f.parent !== null)
-            .forEach((file: TFile) => {
-                for (const path of paths) {
-                    if (file.parent!.path.startsWith(path)) {
-                        this.resolveFileClassBinding(
-                            this.filesPathsMatchingFileClasses,
-                            this.filesFieldsFromFilesPaths,
-                            path,
-                            file
-                        )
-                    }
-                }
-            })
-    }
-
-    private getFilesForItems(items: BookmarkItem[], groups: string[], filesWithGroups: cFileWithGroups[], path: string = "") {
-        if (groups.includes(path || "/")) {
-            items.filter(_i => _i.type === "file").forEach(_i => filesWithGroups.push({ path: _i.path, group: path || "/" }))
-        }
-        for (const group of items.filter(_i => _i.type === "group")) {
-            const subPath = `${path}${path ? "/" : ""}${group.title}`
-            this.getFilesForItems(group.items || [], groups, filesWithGroups, subPath)
-        }
-    }
-
-    private resolveFileClassMatchingBookmarksGroups(): void {
-
-        if (!this.bookmarksGroupsMatchingFileClasses.size) return
-        const groups = [...this.bookmarksGroupsMatchingFileClasses.keys()]
-        const bookmarks = this.bookmarks
-        if (!bookmarks.enabled) return
-        const filesWithGroups: cFileWithGroups[] = []
-        this.getFilesForItems(bookmarks.instance.items || [], groups, filesWithGroups)
-        filesWithGroups.forEach((cFile: cFileWithGroups) => {
-            this.resolveFileClassBinding(
-                this.bookmarksGroupsMatchingFileClasses,
-                this.filesFieldsFromBookmarksGroups,
-                cFile.group,
-                cFile
-            )
-        })
-    }
-
-    private resolveFileClassQueries(): void {
-
-        const dvApi = this.plugin.app.plugins.plugins.dataview?.api
-        if (!dvApi) return
-        this.settings.fileClassQueries.forEach(sfcq => {
-            const fcq = new FileClassQuery(sfcq.name, sfcq.id, sfcq.query, sfcq.fileClassName)
-            fcq.getResults(dvApi).forEach((result: any) => {
-                const fileClass = this.fileClassesName.get(fcq.fileClassName)
-                if (fileClass) {
-                    const f = result.file
-                    this.filesFileClasses.set(f.path, [...new Set([...(this.filesFileClasses.get(f.path) || []), fileClass])])
-                    this.filesFileClassesNames.set(f.path, [...new Set([...(this.filesFileClassesNames.get(f.path) || []), fileClass.name])])
-                }
-                const fileFileClassesFieldsFromQuery = this.fileClassesFields.get(fcq.fileClassName)
-                if (fileFileClassesFieldsFromQuery) this.filesFieldsFromFileClassQueries.set(result.file.path, fileFileClassesFieldsFromQuery)
-            })
-        })
-    }
-
-    private getFilesFieldsFromFileClass(): void {
-
-        this.indexableFiles().forEach(f => {
-            const fileFileClassesNames = [];
-            const fileClassesCache: string[] | string = this.plugin.app.metadataCache.getFileCache(f)?.frontmatter?.[this.settings.fileClassAlias]
-            if (fileClassesCache) {
-                Array.isArray(fileClassesCache) ?
-                    fileFileClassesNames.push(...fileClassesCache) :
-                    fileFileClassesNames.push(...fileClassesCache.split(',').map(fcn => fcn.trim()))
-                fileFileClassesNames.forEach(fileFileClassName => {
-                    const fileClass = this.fileClassesName.get(fileFileClassName)
-                    if (fileClass) {
-                        this.filesFileClasses.set(f.path, [...new Set([...(this.filesFileClasses.get(f.path) || []), fileClass])])
-                        this.filesFileClassesNames.set(f.path, [...new Set([...(this.filesFileClassesNames.get(f.path) || []), fileClass.name])])
-                        const fileClassesFieldsFromFile = this.fileClassesFields.get(fileFileClassName)
-                        const currentFields = this.filesFieldsFromInnerFileClasses.get(f.path)
-
-                        if (fileClassesFieldsFromFile) {
-                            const newFields = [...fileClassesFieldsFromFile]
-                            const filteredCurrentFields = currentFields?.filter(field =>
-                                !newFields.map(f => f.id).includes(field.id) &&
-                                !fileClass.options?.excludes?.map(attr => attr.id).includes(field.id)
-                            ) || []
-                            newFields.push(...filteredCurrentFields)
-                            this.filesFieldsFromInnerFileClasses.set(f.path, newFields)
-                        } else { this.filesFieldsFromInnerFileClasses.set(f.path, []); }
-                    } else { this.filesFieldsFromInnerFileClasses.set(f.path, []); }
-                })
-            } else { this.filesFieldsFromInnerFileClasses.set(f.path, []); }
-        })
-    }
-
     private isLookupOrFormula(field: Field): boolean {
         return ["Lookup", "Formula"].includes(field.type)
     }
@@ -513,13 +402,8 @@ export default class FieldIndex extends FieldIndexBuilder {
         associates fields to each indexable files according to the mapping
         between the file and the fileClasses
         Priority order:
-        1. Inner fileClass
-        2.1 Tag match
-        2.2 Path match
-        2.3 BookmarkGroup match
-        3. fileClassQuery match
-        4. Global fileClass
-        5. settings preset fields
+        1. Tag match
+        2. settings preset fields
 
         compares the fieldSet of the file and updates filesFieldsLastChange accordingly
         */
@@ -531,56 +415,43 @@ export default class FieldIndex extends FieldIndexBuilder {
             )
 
         filesToIndex.forEach(f => {
-            const fileFieldsFromInnerFileClasses = this.filesFieldsFromInnerFileClasses.get(f.path)
-            const fileFieldsFromQuery = this.filesFieldsFromFileClassQueries.get(f.path);
-            const fileFieldsFromTag = this.filesFieldsFromTags.get(f.path);
-            const fileFieldsFromPath = this.filesFieldsFromFilesPaths.get(f.path)
-            const fileFieldsFromGroup = this.filesFieldsFromBookmarksGroups.get(f.path)
+            const fileFieldsFromTag = this.filesFieldsFromTags.get(f.path)
+            const fileClassesFromTag = this.filesFileClasses.get(f.path) || []
             let fileFields: Field[]
             const previousFileFields: string[] | undefined = this.previousFilesFields.get(f.path)?.map(_f => _f.id) || []
-            if (
-                fileFieldsFromInnerFileClasses?.length ||
-                fileFieldsFromQuery?.length ||
-                fileFieldsFromTag?.length ||
-                fileFieldsFromPath?.length ||
-                fileFieldsFromGroup?.length
-            ) {
-                fileFields = fileFieldsFromInnerFileClasses || [];
-                fileFields.push(...(fileFieldsFromTag || []).filter(field => !fileFields.map(f => f.id).includes(field.id)))
-                fileFields.push(...(fileFieldsFromPath || []).filter(field => !fileFields.map(f => f.id).includes(field.id)))
-                fileFields.push(...(fileFieldsFromGroup || []).filter(field => !fileFields.map(f => f.id).includes(field.id)))
-                fileFields.push(...(fileFieldsFromQuery || []).filter(field => !fileFields.map(f => f.id).includes(field.id)))
-                this.filesFields.set(f.path, fileFields);
-                const filesLookupAndFormulasFields: Field[] = fileFields.filter(f => this.isLookupOrFormula(f))
-                filesLookupAndFormulasFields.push(...(fileFieldsFromTag || []).filter(field => !filesLookupAndFormulasFields.map(f => f.id).includes(field.id) && this.isLookupOrFormula(field)))
-                filesLookupAndFormulasFields.push(...(fileFieldsFromPath || []).filter(field => !filesLookupAndFormulasFields.map(f => f.id).includes(field.id) && this.isLookupOrFormula(field)))
-                filesLookupAndFormulasFields.push(...(fileFieldsFromGroup || []).filter(field => !filesLookupAndFormulasFields.map(f => f.id).includes(field.id) && this.isLookupOrFormula(field)))
-                filesLookupAndFormulasFields.push(...(fileFieldsFromQuery || []).filter(field => !filesLookupAndFormulasFields.map(f => f.id).includes(field.id) && this.isLookupOrFormula(field)))
-                if (filesLookupAndFormulasFields.length) this.filesLookupsAndFormulasFields.set(f.path, filesLookupAndFormulasFields)
-            } else if (this.fieldsFromGlobalFileClass.length) {
-                fileFields = this.fieldsFromGlobalFileClass
-                this.filesFields.set(f.path, fileFields)
-                const filesLookupAndFormulasFields = this.fieldsFromGlobalFileClass.filter(f => this.isLookupOrFormula(f))
-                if (filesLookupAndFormulasFields.length) this.filesLookupsAndFormulasFields.set(f.path, this.fieldsFromGlobalFileClass.filter(f => this.isLookupOrFormula(f)))
-                this.filesFileClasses.set(f.path, [this.fileClassesName.get(this.settings.globalFileClass!)!])
-                this.filesFileClassesNames.set(f.path, [this.settings.globalFileClass!])
+
+            if (fileFieldsFromTag?.length) {
+                fileFields = [...fileFieldsFromTag]
+                const names = fileClassesFromTag.map(fc => fc.name)
+                this.filesFileClassesNames.set(f.path, [...new Set([...(this.filesFileClassesNames.get(f.path) || []), ...names])])
             } else {
                 fileFields = this.plugin.presetFields.map(prop => {
                     const property = new (buildEmptyField(this.plugin, undefined))
-                    return Object.assign(property, prop);
-                });
-                this.filesFields.set(f.path, fileFields)
-                const filesLookupAndFormulasFields = fileFields.filter(f => this.isLookupOrFormula(f))
-                if (filesLookupAndFormulasFields.length) this.filesLookupsAndFormulasFields.set(f.path, fileFields.filter(f => this.isLookupOrFormula(f)))
+                    return Object.assign(property, prop)
+                })
             }
+
+            // Deduplicate fields by id
+            const fieldIds = new Set<string>()
+            const uniqueFields: Field[] = []
+            fileFields.forEach(field => {
+                if (!fieldIds.has(field.id)) {
+                    fieldIds.add(field.id)
+                    uniqueFields.push(field)
+                }
+            })
+            this.filesFields.set(f.path, uniqueFields)
+
+            const filesLookupAndFormulasFields = uniqueFields.filter(f => this.isLookupOrFormula(f))
+            if (filesLookupAndFormulasFields.length) this.filesLookupsAndFormulasFields.set(f.path, filesLookupAndFormulasFields)
+
             if (
-                fileFields.some(f => !previousFileFields?.includes(f.id)) ||
-                previousFileFields?.some(fId => !fileFields.map(_f => _f.id).includes(fId))
+                uniqueFields.some(f => !previousFileFields?.includes(f.id)) ||
+                previousFileFields?.some(fId => !uniqueFields.map(_f => _f.id).includes(fId))
             ) {
                 this.filesFieldsLastChange.set(f.path, Date.now())
-
             }
-            this.previousFilesFields.set(f.path, fileFields)
+            this.previousFilesFields.set(f.path, uniqueFields)
         })
         return filesToIndex.length
     }
