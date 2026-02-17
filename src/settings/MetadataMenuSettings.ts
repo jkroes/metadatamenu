@@ -2,20 +2,16 @@ import MetadataMenu from "main";
 import { IField } from "src/fields/Field";
 import { MultiDisplayType } from "src/fields/Fields";
 import { BaseOptions } from "src/fields/base/BaseField";
-import FileClassQuery from "src/fileClass/FileClassQuery";
 
 export type UnboundField = Omit<IField<BaseOptions>, "plugin">
 
 export interface MetadataMenuSettings {
 	presetFields: Array<UnboundField>;
-	fileClassQueries: Array<FileClassQuery>;
 	displayFieldsInContextMenu: boolean;
 	globallyIgnoredFields: Array<string>;
 	classFilesPath: string | null;
 	isAutosuggestEnabled: boolean;
-	fileClassAlias: string;
 	settingsVersion?: string | number;
-	globalFileClass?: string;
 	firstDayOfWeek: number;
 	enableLinks: boolean;
 	enableTabHeader: boolean;
@@ -34,8 +30,6 @@ export interface MetadataMenuSettings {
 	fileIndexingExcludedRegex: Array<string>;
 	frontmatterOnly: boolean;
 	showFileClassSelectInModal: boolean;
-	chooseFileClassAtFileCreation: boolean;
-	autoInsertFieldsAtFileClassInsertion: boolean;
 	fileClassIcon: string;
 	isAutoCalculationEnabled: boolean;
 	disableDataviewPrompt: boolean;
@@ -43,14 +37,11 @@ export interface MetadataMenuSettings {
 
 export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	presetFields: [],
-	fileClassQueries: [],
 	displayFieldsInContextMenu: true,
 	globallyIgnoredFields: [],
 	classFilesPath: null,
 	isAutosuggestEnabled: true,
-	fileClassAlias: "fileClass",
 	settingsVersion: undefined,
-	globalFileClass: undefined,
 	firstDayOfWeek: 1,
 	enableLinks: true,
 	enableTabHeader: true,
@@ -69,8 +60,6 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	fileIndexingExcludedRegex: [],
 	frontmatterOnly: false,
 	showFileClassSelectInModal: true,
-	chooseFileClassAtFileCreation: false,
-	autoInsertFieldsAtFileClassInsertion: false,
 	fileClassIcon: "package",
 	isAutoCalculationEnabled: true,
 	disableDataviewPrompt: false,

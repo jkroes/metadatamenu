@@ -1,11 +1,10 @@
 import './env'
-import { MarkdownView, Notice, Plugin, TFile } from 'obsidian';
+import { MarkdownView, Notice, Plugin } from 'obsidian';
 import { addCommands } from 'src/commands/paletteCommands';
 import ContextMenu from 'src/components/ContextMenu';
 import ExtraButton from 'src/components/ExtraButton';
 import FieldIndex from 'src/index/FieldIndex';
 import IndexStatus from 'src/components/IndexStatus';
-import FileClassQuery from 'src/fileClass/FileClassQuery';
 import { IMetadataMenuApi } from 'src/MetadataMenuApi';
 import { MetadataMenuApi } from 'src/MetadataMenuApi';
 import { DEFAULT_SETTINGS, MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
@@ -17,7 +16,6 @@ import { FileClassFolderButton } from 'src/fileClass/fileClassFolderButton';
 import { FileClassViewManager } from 'src/components/FileClassViewManager';
 import { IndexDatabase } from 'src/db/DatabaseManager';
 import { FileClassCodeBlockManager } from 'src/components/FileClassCodeBlockManager';
-import { AddFileClassToFileModal } from 'src/fileClass/fileClass';
 import { FileClassCodeBlockListManager } from 'src/components/FileClassCodeBlockListManager';
 import { Field, buildEmptyField } from 'src/fields/Field';
 import { TestRunner } from 'src/testing/runner';
@@ -27,7 +25,6 @@ export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
 	public settings: MetadataMenuSettings;
 	public presetFields: Array<Field> = [];
-	public initialFileClassQueries: Array<FileClassQuery> = [];
 	public settingTab: MetadataMenuSettingTab;
 	public fieldIndex: FieldIndex;
 	public extraButton: ExtraButton;
@@ -82,25 +79,9 @@ export default class MetadataMenu extends Plugin {
 			this.presetFields.push(property);
 		});
 
-		this.settings.fileClassQueries.forEach(query => {
-			const fileClassQuery = new FileClassQuery();
-			Object.assign(fileClassQuery, query);
-			this.initialFileClassQueries.push(fileClassQuery);
-		})
-
 		this.addSettingTab(new MetadataMenuSettingTab(this));
 
 		this.api = new MetadataMenuApi(this).make();
-
-		this.registerEvent(
-			this.app.vault.on("create", (file) => {
-				if (!this.fieldIndex.fileClassesName.size) return
-				if (file instanceof TFile && file.extension === "md" && this.settings.chooseFileClassAtFileCreation) {
-					const modal = new AddFileClassToFileModal(this, file)
-					modal.open()
-				}
-			})
-		)
 
 		this.registerEvent(
 			this.app.workspace.on('active-leaf-change', (leaf) => {
@@ -178,7 +159,6 @@ export default class MetadataMenu extends Plugin {
 	async saveSettings() {
 		//remove the 'plugin' attribute from the Field object before writing the field to the settings
 		this.settings.presetFields = this.presetFields.map(_field => { const { plugin, ...field } = _field; return field });
-		this.settings.fileClassQueries = this.initialFileClassQueries;
 		await this.saveData(this.settings);
 		await this.fieldIndex.fullIndex();
 	};
