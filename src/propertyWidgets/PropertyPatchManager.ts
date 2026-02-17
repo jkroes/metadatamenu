@@ -45,8 +45,7 @@ export class PropertyPatchManager extends Component {
                     const field = fields?.find((f: any) => f.name === ctx.key);
                     if (!field) return component;
 
-                    const targetFile = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
-                    if (!(targetFile instanceof TFile)) return component;
+                    if (!(plugin.app.vault.getAbstractFileByPath(ctx.sourcePath) instanceof TFile)) return component;
 
                     if (field.type === "Select") {
                         new SelectPropertySuggest(plugin.app, inputEl, field);
@@ -75,6 +74,7 @@ export class PropertyPatchManager extends Component {
         const uninstall = around(listWidget, {
             render(originalRender: Function) {
                 return function(this: any, containerEl: HTMLElement, value: unknown, ctx: any) {
+                    // Placeholder — real logic added in Tasks 5–6 (Multi, MultiFile)
                     const component = originalRender.call(this, containerEl, value, ctx);
                     return component;
                 };

@@ -5,7 +5,7 @@ export class SelectPropertySuggest extends AbstractInputSuggest<string> {
     constructor(
         app: App,
         private inputElement: HTMLInputElement,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         private field: any,
     ) {
         super(app, inputElement);
