@@ -1,7 +1,5 @@
-import { SuggestModal, TAbstractFile, TFolder } from "obsidian"
+import { SuggestModal } from "obsidian"
 import { FileClassSettingsView } from "../fileClassSettingsView"
-import MetadataMenu from "main"
-import { BookmarkItem } from "src/typings/types"
 
 export class ParentSuggestModal extends SuggestModal<string> {
 
@@ -25,33 +23,6 @@ export class ParentSuggestModal extends SuggestModal<string> {
             options.parent = parent
             this.view.fileClass.updateOptions(options)
         }
-    }
-
-    renderSuggestion(value: string, el: HTMLElement) {
-        el.setText(value)
-    }
-}
-
-export class TagSuggestModal extends SuggestModal<string> {
-
-    constructor(private view: FileClassSettingsView) {
-        super(view.plugin.app)
-        this.containerEl.setAttr("id", `${this.view.fileClass.name}-tagNames-suggest-modal`)
-    }
-
-    getSuggestions(query: string): string[] {
-        //@ts-ignore
-        const tags = Object.keys(this.view.plugin.app.metadataCache.getTags())
-        return tags.filter(t => t.toLowerCase().includes(query.toLowerCase()))
-    }
-
-    onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
-        const options = this.view.fileClass.getFileClassOptions()
-        const tagNames = options.tagNames || []
-        tagNames.push(item.replace(/^#(.*)/, "$1"))
-        options.tagNames = tagNames
-        this.view.fileClass.updateOptions(options)
-
     }
 
     renderSuggestion(value: string, el: HTMLElement) {
@@ -96,82 +67,3 @@ export class FieldSuggestModal extends SuggestModal<string> {
     }
 }
 
-export class PathSuggestModal extends SuggestModal<string> {
-    private plugin: MetadataMenu
-    constructor(private view: FileClassSettingsView) {
-        super(view.plugin.app)
-        this.plugin = view.plugin
-        this.containerEl.setAttr("id", `${this.view.fileClass.name}-filesPaths-suggest-modal`)
-    }
-
-    getSuggestions(query: string): string[] {
-        const abstractFiles = this.plugin.app.vault.getAllLoadedFiles();
-        const folders: TFolder[] = [];
-
-        abstractFiles.forEach((folder: TAbstractFile) => {
-            if (
-                folder instanceof TFolder &&
-                folder.path.toLowerCase().contains(query.toLowerCase())
-            ) {
-                folders.push(folder);
-            }
-        });
-
-        return folders.map(f => f.path);
-    }
-
-
-    onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
-        const options = this.view.fileClass.getFileClassOptions()
-        const filesPaths = options.filesPaths || []
-        filesPaths.push(item)
-        options.filesPaths = filesPaths
-        this.view.fileClass.updateOptions(options)
-    }
-
-    renderSuggestion(value: string, el: HTMLElement) {
-        el.setText(value)
-    }
-}
-
-export class BookmarksGroupSuggestModal extends SuggestModal<string> {
-    private plugin: MetadataMenu
-    constructor(private view: FileClassSettingsView) {
-        super(view.plugin.app)
-        this.plugin = view.plugin
-        this.containerEl.setAttr("id", `${this.view.fileClass.name}-bookmarksGroups-suggest-modal`)
-    }
-
-    private getGroups = (items: BookmarkItem[], groups: string[] = [], path: string = "") => {
-        for (const item of items) {
-            if (item.type === "group") {
-                const subPath = `${path}${path ? "/" : ""}${item.title}`
-                groups.push(subPath)
-                if (item.items) this.getGroups(item.items, groups, subPath)
-            }
-        }
-    }
-
-    getSuggestions(query: string): string[] {
-        //@ts-ignore
-
-        const bookmarks = this.plugin.fieldIndex.bookmarks
-        const groups: string[] = ["/"]
-        if (bookmarks.enabled) this.getGroups(bookmarks.instance.items, groups)
-        return groups
-    }
-
-    onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
-        const cache = this.plugin.app.metadataCache.getFileCache(this.view.fileClass.getClassFile())?.frontmatter as Record<string, any> || {}
-        const options = this.view.fileClass.getFileClassOptions()
-        const bookmarksGroups = options.bookmarksGroups || []
-        bookmarksGroups.push(item)
-        options.bookmarksGroups = bookmarksGroups
-        this.view.fileClass.updateOptions(options)
-
-    }
-
-    renderSuggestion(value: string, el: HTMLElement) {
-        el.setText(value)
-    }
-}

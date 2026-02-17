@@ -1,19 +1,13 @@
 import MetadataMenu from "main";
-import { ButtonComponent, FrontMatterCache, MarkdownRenderer, setIcon, TextComponent, ToggleComponent } from "obsidian";
+import { ButtonComponent, FrontMatterCache, MarkdownRenderer, setIcon, TextComponent } from "obsidian";
 import { FileClass, FileClassOptions } from "../fileClass";
-import { BookmarksGroupSuggestModal, FieldSuggestModal, ParentSuggestModal, PathSuggestModal, TagSuggestModal } from "./settingsViewComponents/suggestModals";
+import { FieldSuggestModal, ParentSuggestModal } from "./settingsViewComponents/suggestModals";
 import { FileClassView, openTab } from "./fileClassView";
 import { setTimeout } from "timers/promises";
 import { testFileClassFieldsView } from "./fileClassFieldsView";
 import { PartialRecord } from "src/typings/types";
 
-type Bindable =
-    | "tagNames"
-    | "filesPaths"
-    | "bookmarksGroups"
-
 type Choosable =
-    | Bindable
     | "extends"
     | "excludes"
 
@@ -71,36 +65,11 @@ export class FileClassSettingsView {
             "Maximum lines displayed per page in the table view",
             (action: HTMLDivElement) => this.buildLimitComponent(action)
         );
-        this.fileClassSettings["mapWithTag"] = new FileClassSetting(
-            settingsContainer,
-            "Map with tag",
-            `Bind tags with ${this.plugin.settings.fileClassAlias}<br/>` +
-            `If Tag Names are empty this fileClass will be bound with the tag of same name`,
-            (action: HTMLDivElement) => this.buildMapWithTagComponent(action)
-        )
         this.fileClassSettings["icon"] = new FileClassSetting(
             settingsContainer,
             "Button Icon",
             "Name of the icon for the metadata menu button<br/>(lucide.dev)",
             (action: HTMLDivElement) => this.buildIconComponent(action)
-        )
-        this.fileClassSettings["tagNames"] = new FileClassSetting(
-            settingsContainer,
-            "Tag Names",
-            `Names of tags to bind this ${this.plugin.settings.fileClassAlias} with`,
-            (action: HTMLDivElement) => this.buildBindingComponent(action, "tagNames", TagSuggestModal)
-        )
-        this.fileClassSettings["filesPaths"] = new FileClassSetting(
-            settingsContainer,
-            "Files paths",
-            `Paths of files to bind this ${this.plugin.settings.fileClassAlias} with`,
-            (action: HTMLDivElement) => this.buildBindingComponent(action, "filesPaths", PathSuggestModal)
-        )
-        this.fileClassSettings["bookmarksGroups"] = new FileClassSetting(
-            settingsContainer,
-            "Bookmarks groups",
-            `Names group of bookmarked files to bind this ${this.plugin.settings.fileClassAlias} with`,
-            (action: HTMLDivElement) => this.buildBindingComponent(action, "bookmarksGroups", BookmarksGroupSuggestModal)
         )
         this.fileClassSettings["parent"] = new FileClassSetting(
             settingsContainer,
@@ -139,16 +108,6 @@ export class FileClassSettingsView {
         input.inputEl.setAttr("id", "fileclass-settings-limit-input")
     }
 
-    private buildMapWithTagComponent(action: HTMLDivElement): void {
-        const toggler = new ToggleComponent(action);
-        toggler.setValue(this.fileClassOptions.mapWithTag)
-        toggler.onChange((value) => {
-            this.saveBtn.addClass("active");
-            this.fileClassOptions.mapWithTag = value;
-        })
-        toggler.toggleEl.setAttr("id", "fileclass-settings-mapWithTag-toggler")
-    }
-
     private buildIconComponent(action: HTMLDivElement): void {
         const iconManagerContainer = action.createDiv({ cls: "icon-manager" })
         const input = new TextComponent(iconManagerContainer);
@@ -163,31 +122,6 @@ export class FileClassSettingsView {
         input.inputEl.setAttr("id", "fileclass-settings-icon-input")
     }
 
-
-    private buildBindingComponent(
-        action: HTMLDivElement,
-        setting: Bindable,
-        suggestModal: typeof PathSuggestModal | typeof TagSuggestModal | typeof BookmarksGroupSuggestModal
-    ): void {
-        const itemsContainer = action.createDiv({ cls: "items" })
-        const boundItemsNames = this.fileClassOptions[setting]
-        boundItemsNames?.forEach(item => {
-            const itemContainer = itemsContainer.createDiv({ cls: "item chip", text: item })
-            new ButtonComponent(itemContainer)
-                .setIcon("x-circle")
-                .setClass("item-remove")
-                .onClick(async () => {
-                    boundItemsNames?.remove(item)
-                    await this.fileClass.updateOptions(this.fileClassOptions);
-                })
-        })
-        const addBtn = itemsContainer.createEl('button', { cls: "item add" })
-        addBtn.setAttr("id", `fileclass-setting-${setting}-addBtn`)
-        setIcon(addBtn, "plus-circle")
-        addBtn.onclick = () => {
-            new suggestModal(this).open();
-        }
-    }
 
     private buildExcludesComponent(action: HTMLDivElement): void {
         const fieldsContainer = action.createDiv({ cls: "items" })
@@ -287,11 +221,6 @@ export async function testFileClassSettingsView(plugin: MetadataMenu, fileClass:
         input.value = data.limit
         input.dispatchEvent(new Event("input"))
     }
-    if ("mapWithTag" in data && data.mapWithTag) {
-        const toggle = container.querySelector("#fileclass-settings-mapWithTag-toggler") as HTMLElement
-        if (!toggle) throw Error("Map with tag toggler not found")
-        toggle.click()
-    }
     if ("icon" in data) {
         const input = container.querySelector("#fileclass-settings-icon-input") as HTMLInputElement
         if (!input) throw Error("Icon input not found")
@@ -300,9 +229,6 @@ export async function testFileClassSettingsView(plugin: MetadataMenu, fileClass:
     }
     fCView.settingsView.saveBtn.click()
     await setTimeout(50) //upper changes have to be saved before changing other settings
-    await selectChoices("tagNames")
-    await selectChoices("bookmarksGroups")
-    await selectChoices("filesPaths")
     await selectChoices("extends")
     await testFileClassFieldsView(plugin, fCView.fileClass, data, speed)
     await selectChoices("excludes")

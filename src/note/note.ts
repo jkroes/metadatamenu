@@ -266,16 +266,6 @@ export class Note {
         const { id, index } = getIdAndIndex(indexedPath.split("____").last())
         const { id: upperFieldId, index: upperFieldIndex } = getIdAndIndex(upperPath.split("____").last())
         if (lineNumber === -1 && !this.frontmatter) this.initFrontmatter()
-        if (id.startsWith("fileclass-field")) {
-            const fR = id.match(/fileclass-field-(?<fileClassAlias>.*)/)
-            if (fR?.groups?.fileClassAlias) {
-                const content = `${fR.groups.fileClassAlias}: ${payload.value}`
-                const newLine = new Line(this.plugin, this, "yaml", content, 1)
-                newLine.renderLine(asList, asBlockquote)
-
-            }
-            return
-        }
 
         if (!upperFieldIndex) {
             //MDM_DEBUG && console.log("Not an item of objectlist")
