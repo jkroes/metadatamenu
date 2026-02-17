@@ -1,7 +1,7 @@
 import MetadataMenu from "main";
 import { MarkdownView, Notice, TFile } from "obsidian";
 import NoteFieldsComponent from "src/components/FieldsModal";
-import { AddFileClassToFileModal, FileClass, getFileClassNameFromPath } from "src/fileClass/fileClass";
+import { AddFileClassTagModal, FileClass, getFileClassNameFromPath } from "src/fileClass/fileClass";
 import chooseSectionModal from "src/modals/chooseSectionModal";
 import FieldCommandSuggestModal from "src/options/FieldCommandSuggestModal";
 import FileClassOptionsList from "src/options/FileClassOptionsList";
@@ -326,7 +326,7 @@ function fileclassToFileCommand(plugin: MetadataMenu) {
                 return !!activeFile
             }
             if (activeFile) {
-                const modal = new AddFileClassToFileModal(plugin, activeFile)
+                const modal = new AddFileClassTagModal(plugin, activeFile)
                 modal.open()
 
             }

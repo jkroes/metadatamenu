@@ -2,7 +2,7 @@ import MetadataMenu from "main";
 import { MarkdownView, Menu, Notice, TFile } from "obsidian";
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import NoteFieldsComponent from "src/components/FieldsModal";
-import { AddFileClassToFileModal } from "src/fileClass/fileClass";
+import { AddFileClassTagModal } from "src/fileClass/fileClass";
 import AddNewFileClassModal from "src/modals/AddNewFileClassModal";
 import { LineNode } from "src/note/lineNode";
 import { Note } from "src/note/note";
@@ -360,7 +360,7 @@ export default class OptionsList {
 	}
 
 	private addFileClassToFileOption(): void {
-		const modal = new AddFileClassToFileModal(this.plugin, this.file)
+		const modal = new AddFileClassTagModal(this.plugin, this.file)
 		const action = () => modal.open();
 		if (isMenu(this.location)) {
 			this.location.addItem((item) => {
