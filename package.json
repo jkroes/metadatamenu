@@ -39,7 +39,12 @@
 		"@popperjs/core": "^2.11.5",
 		"codemirror": "^6.0.1",
 		"crypto-random-string": "^5.0.0",
+		"monkey-around": "^3.0.0",
+		"obsidian-typings": "^4.99.0",
 		"yaml": "^2.3.2"
 	},
-	"type": "module"
+	"type": "module",
+	"overrides": {
+		"@types/d3-dispatch": "3.0.6"
+	}
 }
