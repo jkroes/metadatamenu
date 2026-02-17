@@ -2,10 +2,6 @@ import { PluginSettingTab, Setting, ButtonComponent, ToggleComponent, Modal, Dro
 import MetadataMenu from "main";
 import FieldSetting from "src/settings/FieldSetting";
 import { FolderSuggest } from "src/suggester/FolderSuggester";
-import { FileSuggest } from "src/suggester/FileSuggester";
-import FileClassQuery from "src/fileClass/FileClassQuery";
-import FileClassQuerySettingsModal from "./FileClassQuerySettingModal";
-import FileClassQuerySetting from "./FileClassQuerySetting";
 import { DEFAULT_SETTINGS } from "./MetadataMenuSettings";
 import { openSettings } from "src/fields/base/BaseSetting";
 import { buildEmptyField } from "src/fields/Field";
@@ -172,7 +168,6 @@ class ButtonDisplaySetting extends Setting {
 export default class MetadataMenuSettingTab extends PluginSettingTab {
 	private plugin: MetadataMenu;
 	private newFileClassesPath: string | null;
-	private newFileClassAlias: string
 	private newTableViewMaxRecords: number
 	private newIcon: string
 	public groups: SettingGroup[] = []
@@ -181,7 +176,6 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 	constructor(plugin: MetadataMenu) {
 		super(plugin.app, plugin);
 		this.plugin = plugin;
-		this.newFileClassAlias = this.plugin.settings.fileClassAlias
 		this.newFileClassesPath = this.plugin.settings.classFilesPath
 		this.newTableViewMaxRecords = this.plugin.settings.tableViewMaxRecords
 		this.newIcon = this.plugin.settings.fileClassIcon
@@ -195,9 +189,9 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		//#region global settings
-		/* 
+		/*
 		-----------------------------------------
-		Global Settings 
+		Global Settings
 		-----------------------------------------
 		*/
 		const globalSettings = new SettingGroup(this,
@@ -381,9 +375,9 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 
 		//#endregion
 		//#region presetFields
-		/* 
+		/*
 		-----------------------------------------
-		Managing predefined fields 
+		Managing predefined fields
 		-----------------------------------------
 		*/
 		/* Add new property for which we want to preset options*/
@@ -418,9 +412,9 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		});
 		//#endregion
 		//#region fileclass
-		/* 
+		/*
 		-----------------------------------------
-		Managing fileClass 
+		Managing fileClass
 		-----------------------------------------
 		*/
 
@@ -461,62 +455,6 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		path.settingEl.addClass("narrow-title");
 		path.controlEl.addClass("full-width");
 		path.settingEl.appendChild(cFS.fileClassesFolderSaveButton.buttonEl)
-
-		const aliasSaveButton = new ButtonComponent(classFilesSettings.containerEl)
-		aliasSaveButton.buttonEl.addClass("save")
-		aliasSaveButton.setIcon("save")
-		aliasSaveButton.onClick(async () => {
-			this.plugin.settings.fileClassAlias = this.newFileClassAlias
-			await this.plugin.saveSettings()
-			aliasSaveButton.removeCta()
-		})
-
-		const alias = new Setting(classFilesSettings.containerEl)
-			.setName('FileClass field alias')
-			.setDesc('Choose another name for fileClass field in frontmatter (example: Category, type, ...')
-			.addText((text) => {
-				text
-					.setValue(this.plugin.settings.fileClassAlias)
-					.onChange(async (value) => {
-						this.newFileClassAlias = value || "fileClass";
-						aliasSaveButton.setCta()
-					});
-			})
-		alias.settingEl.addClass("no-border");
-		alias.settingEl.addClass("narrow-title");
-		alias.controlEl.addClass("full-width");
-		alias.settingEl.appendChild(aliasSaveButton.buttonEl)
-
-		/* 
-
-		/* Set global fileClass*/
-		const global = new Setting(classFilesSettings.containerEl)
-			.setName('Global fileClass')
-			.setDesc('Choose one fileClass to be applicable to all files ' +
-				'(even it is not present as a fileClass attribute in their frontmatter). ' +
-				'This will override the preset Fields defined above')
-			.addSearch((cfs) => {
-				new FileSuggest(
-					cfs.inputEl,
-					this.plugin,
-					this.plugin.settings.classFilesPath || ""
-				);
-				cfs.setPlaceholder("Global fileClass")
-				cfs.setValue(
-					this.plugin.settings.globalFileClass ?
-						this.plugin.settings.classFilesPath + this.plugin.settings.globalFileClass + ".md" :
-						""
-				)
-					.onChange((newPath) => {
-						this.plugin.settings.globalFileClass = newPath ?
-							newPath.split('\\').pop()!.split('/').pop()?.replace(".md", "") :
-							"";
-						this.plugin.saveSettings();
-					});
-			})
-		global.settingEl.addClass("no-border");
-		global.settingEl.addClass("narrow-title");
-		global.controlEl.addClass("full-width");
 
 		/* Default Icon */
 		const defaultIconSave = new ButtonComponent(classFilesSettings.containerEl)
@@ -574,37 +512,6 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		maxRows.controlEl.addClass("full-width");
 		maxRows.settingEl.appendChild(rowPerPageSaveButton.buttonEl)
 
-		/* Choose fileclass at file creation Fileclass selector in modal*/
-
-		const chooseFileClassAtFileCreation = new Setting(classFilesSettings.containerEl)
-			.setName('Add a fileclass after create')
-			.setDesc('Select a fileclass at file creation to be added to the file')
-			.addToggle(cb => {
-				cb.setValue(this.plugin.settings.chooseFileClassAtFileCreation);
-				cb.onChange(value => {
-					this.plugin.settings.chooseFileClassAtFileCreation = value;
-					this.plugin.saveSettings();
-				})
-			})
-		chooseFileClassAtFileCreation.settingEl.addClass("no-border");
-		chooseFileClassAtFileCreation.controlEl.addClass("full-width");
-
-
-		/* Choose fileclass at file creation Fileclass selector in modal*/
-
-		const autoInsertFieldsAtFileClassInsertion = new Setting(classFilesSettings.containerEl)
-			.setName('Insert fileClass fields')
-			.setDesc('Includes fileClass in frontmatter after fileClass choice')
-			.addToggle(cb => {
-				cb.setValue(this.plugin.settings.autoInsertFieldsAtFileClassInsertion);
-				cb.onChange(value => {
-					this.plugin.settings.autoInsertFieldsAtFileClassInsertion = value;
-					this.plugin.saveSettings();
-				})
-			})
-		autoInsertFieldsAtFileClassInsertion.settingEl.addClass("no-border");
-		autoInsertFieldsAtFileClassInsertion.controlEl.addClass("full-width");
-
 		/* Fileclass selector in modal*/
 
 		const showFileClassSelectInModal = new Setting(classFilesSettings.containerEl)
@@ -621,7 +528,7 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 		showFileClassSelectInModal.controlEl.addClass("full-width");
 		//#endregion
 		//#region button display
-		/* 
+		/*
 		--------------------------------------------------
 		Managing extra button display options
 		--------------------------------------------------
@@ -685,43 +592,6 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			"enableStarred",
 			needsReload: boolean
 		}[]).forEach(s => new ButtonDisplaySetting(this.plugin, metadataMenuBtnSettings.containerEl, s.name, s.description, s.value, s.needsReload))
-		//#endregion
-		//#region fileclass matching queries
-		/* 
-		--------------------------------------------------
-		Managing predefined fileClass for query's matching files 
-		--------------------------------------------------
-		*/
-		/* Add new query for which matching files will be applied the fileClass*/
-
-		containerEl.createDiv({ cls: "setting-divider" });
-		const queryFileClassSettings = new SettingGroup(this,
-			'fileclass-queries',
-			'Query based FileClass settings',
-			"Manage globally predefined type and options for a field matching this query",
-			true
-		)
-		new Setting(queryFileClassSettings.containerEl)
-			.setName("Add New Query for fileClass")
-			.setDesc("Add a new query and a FileClass that will apply to files matching this query.")
-			.addButton((button: ButtonComponent): ButtonComponent => {
-				return button
-					.setTooltip("Add New fileClass query")
-					.setButtonText("Add new")
-					.setCta()
-					.onClick(async () => {
-						let modal = new FileClassQuerySettingsModal(this.plugin, queryFileClassSettings.containerEl);
-						modal.open();
-					});
-			}).settingEl.addClass("no-border");
-
-		/* Managed properties that currently have preset options */
-		this.plugin.initialFileClassQueries
-			.forEach(query => {
-				const fileClassQuery = new FileClassQuery();
-				Object.assign(fileClassQuery, query);
-				new FileClassQuerySetting(queryFileClassSettings.containerEl, fileClassQuery, this.plugin);
-			});
 		//#endregion
 	};
 };
