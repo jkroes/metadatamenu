@@ -103,7 +103,7 @@ export default class OptionsList {
 				const fileClassOptionsList = new FileClassOptionsList(this.plugin, fileClass.getClassFile(), location, this.file)
 				fileClassOptionsList.createExtraOptionList(false);
 			})
-			this.addFileClassToFileOption();
+			this.addFileClassTagOption();
 			this.addNewFileClassOption();
 		}
 	}
@@ -149,7 +149,7 @@ export default class OptionsList {
 					icon: "wrench"
 				})
 			})
-			this.addFileClassToFileOption();
+			this.addFileClassTagOption();
 			this.addNewFileClassOption();
 			if (openAfterCreate) location.open();
 		}
@@ -359,24 +359,23 @@ export default class OptionsList {
 		}
 	}
 
-	private addFileClassToFileOption(): void {
+	private addFileClassTagOption(): void {
 		const modal = new AddFileClassTagModal(this.plugin, this.file)
-		const action = () => modal.open();
+		const action = () => modal.open()
 		if (isMenu(this.location)) {
 			this.location.addItem((item) => {
-				item.setIcon("plus-square");
-				item.setTitle(`Add ${this.plugin.settings.fileClassAlias} to ${this.file.basename}`);
-				item.onClick(action);
-				item.setSection("metadata-menu-fileclass");
-			});
+				item.setTitle(`Add fileClass tag to ${this.file.basename}`)
+				item.onClick(action)
+				item.setSection("metadata-menu-fileclass")
+			})
 		} else if (isSuggest(this.location)) {
 			this.location.options.push({
-				id: "add_fileclass_to_file",
-				actionLabel: `Add ${this.plugin.settings.fileClassAlias} to ${this.file.basename}`,
+				id: "add_fileclass_tag_to_file",
+				actionLabel: `Add fileClass tag to ${this.file.basename}`,
 				action: action,
-				icon: "package-plus"
+				icon: "tag"
 			})
-		};
+		}
 	}
 
 	private addNewFileClassOption(): void {
@@ -386,14 +385,14 @@ export default class OptionsList {
 			if (isMenu(this.location)) {
 				this.location.addItem((item) => {
 					item.setIcon("file-plus-2");
-					item.setTitle(`Add a new ${this.plugin.settings.fileClassAlias}`)
+					item.setTitle(`Add a new fileClass`)
 					item.onClick(action);
 					item.setSection("metadata-menu-fileclass");
 				})
 			} else if (isSuggest(this.location)) {
 				this.location.options.push({
 					id: "add_new_fileclass",
-					actionLabel: `Add a new ${this.plugin.settings.fileClassAlias}`,
+					actionLabel: `Add a new fileClass`,
 					action: action,
 					icon: "file-plus-2"
 				})
