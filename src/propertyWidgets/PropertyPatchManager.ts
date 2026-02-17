@@ -2,6 +2,7 @@ import { Component, TFile } from "obsidian";
 import { around } from "monkey-around";
 import type MetadataMenu from "../../main";
 import { SelectPropertySuggest } from "./suggest/SelectPropertySuggest";
+import { FilePropertySuggest } from "./suggest/FilePropertySuggest";
 
 export class PropertyPatchManager extends Component {
     private uninstallers: Array<() => void> = [];
@@ -49,6 +50,8 @@ export class PropertyPatchManager extends Component {
 
                     if (field.type === "Select") {
                         new SelectPropertySuggest(plugin.app, inputEl, field);
+                    } else if (field.type === "File") {
+                        new FilePropertySuggest(plugin.app, inputEl, field);
                     }
 
                     return component;
