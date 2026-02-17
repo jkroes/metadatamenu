@@ -364,6 +364,7 @@ export default class OptionsList {
 		const action = () => modal.open()
 		if (isMenu(this.location)) {
 			this.location.addItem((item) => {
+				item.setIcon("tag")
 				item.setTitle(`Add fileClass tag to ${this.file.basename}`)
 				item.onClick(action)
 				item.setSection("metadata-menu-fileclass")
