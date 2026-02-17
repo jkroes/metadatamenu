@@ -24,6 +24,7 @@
 		"builtin-modules": "3.3.0",
 		"esbuild": "0.17.3",
 		"obsidian": "latest",
+		"obsidian-typings": "^4.99.0",
 		"onchange": "^7.1.0",
 		"sass": "^1.64.1",
 		"ts-node-dev": "^2.0.0",
@@ -40,7 +41,6 @@
 		"codemirror": "^6.0.1",
 		"crypto-random-string": "^5.0.0",
 		"monkey-around": "^3.0.0",
-		"obsidian-typings": "^4.99.0",
 		"yaml": "^2.3.2"
 	},
 	"type": "module",
