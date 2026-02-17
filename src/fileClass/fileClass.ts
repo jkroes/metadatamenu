@@ -11,7 +11,7 @@ import { SavedView } from "./views/tableViewComponents/saveViewModal";
 import { insertMissingFields } from "src/commands/insertMissingFields";
 import { compareArrays } from "src/utils/array";
 import { FieldType, FieldType as IFieldType, MultiDisplayType, fieldTypes } from "src/fields/Fields"
-import { Field, getNewFieldId, stringToBoolean, FieldCommand } from "src/fields/Field";
+import { Field, getNewFieldId, FieldCommand } from "src/fields/Field";
 
 //#region Fileclass, options
 
@@ -136,16 +136,6 @@ class FileClass {
         const favoriteView: string | null = (typeof _favoriteView === "string" && _favoriteView !== "") ? _favoriteView : null
         const fieldsOrder: Field['id'][] = _fieldsOrder || []
         return new FileClassOptions(limit, icon, parent, excludes, savedViews, favoriteView, fieldsOrder);
-    }
-
-    public isMappedWithTag(): boolean {
-        try {
-            const fileClassFile = this.getClassFile();
-            const mapWithTag = this.plugin.app.metadataCache.getFileCache(fileClassFile)?.frontmatter?.mapWithTag;
-            return !!mapWithTag;
-        } catch (error) {
-            return false
-        }
     }
 
     public getClassFile(): TFile {

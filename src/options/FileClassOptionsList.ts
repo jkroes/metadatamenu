@@ -36,9 +36,6 @@ export default class FileClassOptionsList {
     };
 
     public createExtraOptionList(openAfterCreate: boolean = true): void {
-        const mapWithTagAction = async () => {
-            this.plugin.app.fileManager.processFrontMatter(this.file, fm => fm.mapWithTag = true)
-        }
         const openFileClassTableViewAction = () => {
             const fileClassComponent = new FileClassViewManager(this.plugin, fileClass)
             this.plugin.addChild(fileClassComponent);
@@ -90,14 +87,6 @@ export default class FileClassOptionsList {
                     icon: "file-spreadsheet"
                 })
             }
-            if (fileClass && !fileClass.isMappedWithTag()) {
-                this.location.options.push({
-                    id: "map_fileClass_with_tag",
-                    actionLabel: `<span>Map <b>${fileClass.name}</b> with tag of same name</span>`,
-                    action: mapWithTagAction,
-                    icon: "hash"
-                });
-            }
             if (fileClass && missingFields && this.fromFile) {
                 this.location.options.push({
                     id: `insert_missig_fields_from_${fileClass.name.replace("/", "_")}`,
@@ -116,14 +105,6 @@ export default class FileClassOptionsList {
                     item.setTitle(`Display ${fileClass.name} table view`);
                     item.onClick(openFileClassTableViewAction);
                     item.setIcon("file-spreadsheet");
-                    item.setSection(`metadata-menu-fileclass.${fileClass.name}.fileclass-fields`);
-                })
-            }
-            if (fileClass && !fileClass.isMappedWithTag()) {
-                this.location.addItem((item) => {
-                    item.setTitle(`Map ${fileClass.name} with tag`);
-                    item.setIcon("hash");
-                    item.onClick(mapWithTagAction);
                     item.setSection(`metadata-menu-fileclass.${fileClass.name}.fileclass-fields`);
                 })
             }
