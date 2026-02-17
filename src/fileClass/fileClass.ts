@@ -45,10 +45,6 @@ export interface FileClassOptions {
     icon: string,
     parent?: FileClass;
     excludes?: Array<FileClassAttribute>;
-    tagNames?: string[],
-    mapWithTag: boolean,
-    filesPaths?: string[],
-    bookmarksGroups?: string[],
     savedViews?: SavedView[],
     favoriteView?: string | null
     fieldsOrder?: Field['id'][]
@@ -61,10 +57,6 @@ export class FileClassOptions {
         public icon: string,
         public parent?: FileClass,
         public excludes?: Array<FileClassAttribute>,
-        public tagNames?: string[],
-        public mapWithTag: boolean = false,
-        public filesPaths?: string[],
-        public bookmarksGroups?: string[],
         public savedViews?: SavedView[],
         public favoriteView?: string | null,
         public fieldsOrder?: Field['id'][]
@@ -127,10 +119,6 @@ class FileClass {
             extends: _parent,
             limit: _limit,
             excludes: _excludes,
-            mapWithTag: _mapWithTag,
-            tagNames: _tagNames,
-            filesPaths: _filesPaths,
-            bookmarksGroups: _bookmarksGroups,
             icon: _icon,
             savedViews: _savedViews,
             favoriteView: _favoriteView,
@@ -147,15 +135,11 @@ class FileClass {
             })
         })
         const limit = typeof (_limit) === 'number' ? _limit : this.plugin.settings.tableViewMaxRecords
-        const mapWithTag = stringToBoolean(_mapWithTag);
-        const tagNames = getTagNamesFromFrontMatter(_tagNames);
-        const filesPaths = getFilesPathsFromFrontMatter(_filesPaths);
-        const bookmarksGroups = getBookmarksGroupsFromFrontMatter(_bookmarksGroups);
         const icon = typeof (_icon) === 'string' ? _icon : this.plugin.settings.fileClassIcon
         const savedViews: SavedView[] = _savedViews || [];
         const favoriteView: string | null = (typeof _favoriteView === "string" && _favoriteView !== "") ? _favoriteView : null
         const fieldsOrder: Field['id'][] = _fieldsOrder || []
-        return new FileClassOptions(limit, icon, parent, excludes, tagNames, mapWithTag, filesPaths, bookmarksGroups, savedViews, favoriteView, fieldsOrder);
+        return new FileClassOptions(limit, icon, parent, excludes, savedViews, favoriteView, fieldsOrder);
     }
 
     public isMappedWithTag(): boolean {
@@ -581,38 +565,8 @@ export function indexFileClass(index: FieldIndex, file: TFile): void {
                 index.v1FileClassesPath.set(file.path, fileClass)
                 index.remainingLegacyFileClasses = true
             }
-            /*
-            ** Map with tags
-            */
-            if (cache?.frontmatter?.mapWithTag) {
-                if (!fileClassName.includes(" ")) {
-                    index.tagsMatchingFileClasses.set(fileClassName, fileClass)
-                }
-            }
-            if (cache?.frontmatter?.tagNames) {
-                const _tagNames = cache?.frontmatter?.tagNames as string | string[];
-                const tagNames = Array.isArray(_tagNames) ? [..._tagNames] : _tagNames.split(",").map(t => t.trim())
-                tagNames.forEach(tag => {
-                    if (!tag.includes(" ")) {
-                        index.tagsMatchingFileClasses.set(tag, fileClass)
-                    }
-                })
-            }
-            /*
-            ** Map with files paths
-            */
-            if (cache?.frontmatter?.filesPaths) {
-                const _filesPaths = cache?.frontmatter?.filesPaths as string | string[];
-                const filesPaths = Array.isArray(_filesPaths) ? [..._filesPaths] : _filesPaths.split(",").map(f => f.trim())
-                filesPaths.forEach(path => index.filesPathsMatchingFileClasses.set(path, fileClass))
-            }
-            /*
-            ** Map with bookmarks groups
-            */
-            if (cache?.frontmatter?.bookmarksGroups) {
-                const _bookmarksGroups = cache?.frontmatter?.bookmarksGroups as string | string[];
-                const bookmarksGroups = Array.isArray(_bookmarksGroups) ? [..._bookmarksGroups] : _bookmarksGroups.split(",").map(g => g.trim())
-                bookmarksGroups.forEach(group => index.bookmarksGroupsMatchingFileClasses.set(group, fileClass))
+            if (!fileClassName.includes(" ")) {
+                index.tagsMatchingFileClasses.set(fileClassName, fileClass)
             }
         } catch (error) {
             console.error(error)
