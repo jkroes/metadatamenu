@@ -21,7 +21,8 @@ import { AddFileClassToFileModal } from 'src/fileClass/fileClass';
 import { FileClassCodeBlockListManager } from 'src/components/FileClassCodeBlockListManager';
 import { Field, buildEmptyField } from 'src/fields/Field';
 import { TestRunner } from 'src/testing/runner';
-import { PropertyPatchManager } from "./src/propertyWidgets/PropertyPatchManager";
+import { PropertyPatchManager } from "src/propertyWidgets/PropertyPatchManager";
+
 export default class MetadataMenu extends Plugin {
 	public api: IMetadataMenuApi;
 	public settings: MetadataMenuSettings;
