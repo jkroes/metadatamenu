@@ -2,13 +2,11 @@ import { FileClassAttribute } from "./fileClassAttribute";
 import MetadataMenu from "main";
 import { Notice, SuggestModal, TFile } from "obsidian";
 import { capitalize } from "src/utils/textUtils";
-import { postValues } from "src/commands/postValues";
 import { FieldStyleLabel } from "src/types/dataviewTypes";
 import { Note } from "src/note/note";
 import FieldIndex from "src/index/FieldIndex";
 import { MetadataMenuSettings } from "src/settings/MetadataMenuSettings";
 import { SavedView } from "./views/tableViewComponents/saveViewModal";
-import { insertMissingFields } from "src/commands/insertMissingFields";
 import { compareArrays } from "src/utils/array";
 import { FieldType, FieldType as IFieldType, MultiDisplayType, fieldTypes } from "src/fields/Fields"
 import { Field, getNewFieldId, FieldCommand } from "src/fields/Field";
@@ -67,42 +65,47 @@ interface FileClass extends FileClassOptions {
     options: FileClassOptions;
 }
 
-export class AddFileClassToFileModal extends SuggestModal<string> {
+export class AddFileClassTagModal extends SuggestModal<string> {
 
     constructor(
         private plugin: MetadataMenu,
         private file: TFile
     ) {
         super(plugin.app)
+        this.setPlaceholder("Choose a fileClass to add as a tag")
     }
 
-    getSuggestions(query: string): string[] | Promise<string[]> {
-        const fileClasses = [...this.plugin.fieldIndex.fileClassesName.keys()]
-            .filter(fileClassName => !this.plugin.fieldIndex.filesFileClasses
-                .get(this.file.path)?.map(fileClass => fileClass.name)
-                .includes(fileClassName)
-            )
-            .filter(fileClassName => fileClassName.toLocaleLowerCase().contains(query.toLowerCase()))
-            .sort();
-        return fileClasses
+    getSuggestions(query: string): string[] {
+        const cache = this.plugin.app.metadataCache.getFileCache(this.file)
+        const fmTags: string | string[] = cache?.frontmatter?.tags || []
+        const fmTagArray: string[] = Array.isArray(fmTags)
+            ? fmTags
+            : fmTags.split(',').map((t: string) => t.trim())
+        const inlineTags: string[] = cache?.tags?.map(t => t.tag.replace(/^#/, '')) || []
+        const existingTags = new Set([...fmTagArray, ...inlineTags])
+
+        return [...this.plugin.fieldIndex.fileClassesName.keys()]
+            .filter(name => !existingTags.has(name))
+            .filter(name => name.toLowerCase().contains(query.toLowerCase()))
+            .sort()
     }
 
-    renderSuggestion(value: string, el: HTMLElement) {
-        el.setText(value);
-        el.setAttr("id", `fileclass-${value}-add-choice`)
+    renderSuggestion(item: string, el: HTMLElement): void {
+        el.createEl("div", { text: item })
     }
 
-    onChooseSuggestion(item: string, evt: MouseEvent | KeyboardEvent) {
-        this.insertFileClassToFile(item)
-    }
-    async insertFileClassToFile(value: string) {
-        const fileClassAlias = this.plugin.settings.fileClassAlias
-        const currentFileClasses = this.plugin.fieldIndex.filesFileClasses.get(this.file.path)
-        const newValue = currentFileClasses ? [...currentFileClasses.map(fc => fc.name), value].join(", ") : value
-        await postValues(this.plugin, [{ indexedPath: `fileclass-field-${fileClassAlias}`, payload: { value: newValue } }], this.file, -1)
-        if (this.plugin.settings.autoInsertFieldsAtFileClassInsertion) {
-            insertMissingFields(this.plugin, this.file, -1)
-        }
+    onChooseSuggestion(item: string, _evt: MouseEvent | KeyboardEvent): void {
+        this.plugin.app.fileManager.processFrontMatter(this.file, (fm) => {
+            const tags = fm["tags"]
+            if (!tags) {
+                fm["tags"] = [item]
+            } else if (Array.isArray(tags)) {
+                if (!tags.includes(item)) tags.push(item)
+            } else {
+                const tagArray = String(tags).split(',').map((t: string) => t.trim())
+                if (!tagArray.includes(item)) fm["tags"] = [...tagArray, item]
+            }
+        })
     }
 }
 class FileClass {
@@ -145,7 +148,7 @@ class FileClass {
             return file;
         } else {
             const error = new Error(
-                `no file named <${this.name}.md> in <${filesClassPath}> folder to match <${this.plugin.settings.fileClassAlias}: ${this.name}> in one of these notes`
+                `no file named <${this.name}.md> in <${filesClassPath}> folder`
             );
             throw error;
         }

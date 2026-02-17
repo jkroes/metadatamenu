@@ -103,7 +103,7 @@ export class Note {
                     case "Canvas": return this.renderMultiFilesFields(rawValue, (item) => item ? `"${item}"` : "");
                     case "CanvasGroup": return this.renderMultiFields(rawValue, (item) => this.renderValueString(item, type, indentationLevel));
                     case "CanvasGroupLink": return this.renderMultiFilesFields(rawValue, (item) => item ? `"${item}"` : "");
-                    case undefined: if ([...ReservedMultiAttributes, this.plugin.settings.fileClassAlias].includes(field.name)) {
+                    case undefined: if ([...ReservedMultiAttributes].includes(field.name)) {
                         return this.renderMultiFields(rawValue, (item) => `${item}`)
                     } else {
                         return this.renderValueString(rawValue, type, indentationLevel);

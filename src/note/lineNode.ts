@@ -4,7 +4,7 @@ import { frontMatterLineField, parsedField } from "src/utils/parser";
 import { buildEndStyle, buildStartStyle } from "src/types/dataviewTypes";
 import * as Lookup from "src/types/lookupTypes";
 import { ExistingField } from "src/fields/ExistingField"
-import { buildEmptyField, getValueFromIndexedPath, Field } from "src/fields/Field";
+import { getValueFromIndexedPath, Field } from "src/fields/Field";
 import { MultiDisplayType, frontmatterOnlyTypes } from "src/fields/Fields";
 
 export const separator: Record<LinePosition, ":" | "::"> = {
@@ -154,26 +154,6 @@ export class LineNode {
                                 break;
                             }
                         }
-                    }
-                    if (yamlAttr === this.plugin.settings.fileClassAlias) {
-                        const fileClasses = [...this.plugin.fieldIndex.fileClassesName.keys()].sort()
-                        const fileClassField = new (buildEmptyField(this.plugin, undefined, "Select"))
-                        const valuesList: Record<string, string> = {}
-                        const options = {
-                            sourceType: "ValuesList",
-                            valuesList: valuesList
-                        }
-                        for (const [index, fC] of fileClasses.entries()) {
-                            valuesList[`${index}`] = fC
-                        }
-                        fileClassField.options = options
-                        fileClassField.id = `fileclass-field-${this.plugin.settings.fileClassAlias}`
-                        fileClassField.name = this.plugin.settings.fileClassAlias
-                        this.field = fileClassField
-                        this.indexedPath = fileClassField.id
-                        this.value = value
-                        const existingField = new ExistingField(this, fileClassField, value, this.field.id)
-                        this.line.note.existingFields.push(existingField)
                     }
                 }
                 break;

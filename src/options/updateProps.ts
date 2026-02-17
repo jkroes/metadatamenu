@@ -21,10 +21,8 @@ const updateProps = async (plugin: MetadataMenu, view: MarkdownView | PropView, 
             id: string | undefined,
             type: FieldType | undefined
         } = {
-            id: key === plugin.settings.fileClassAlias ?
-                `fileclass-field-${plugin.settings.fileClassAlias}` :
-                plugin.fieldIndex.filesFields.get(file.path)?.find(_f => _f.isRoot() && _f.name === key)?.id,
-            type: key === plugin.settings.fileClassAlias ? "Select" : plugin.fieldIndex.filesFields.get(file.path)?.find(_f => _f.isRoot() && _f.name === key)?.type
+            id: plugin.fieldIndex.filesFields.get(file.path)?.find(_f => _f.isRoot() && _f.name === key)?.id,
+            type: plugin.fieldIndex.filesFields.get(file.path)?.find(_f => _f.isRoot() && _f.name === key)?.type
         }
         if (!pseudoField.id || !pseudoField.type) return
         const node = note.getNodeForIndexedPath(pseudoField.id)
@@ -77,9 +75,6 @@ export async function updatePropertiesSection(plugin: MetadataMenu) {
 
             if (field) {
                 const eF = note.getExistingFieldForIndexedPath(field.id)
-                focusedElement.find("[class^=metadata-input]")?.setText(eF?.value || "")
-            } else if (key === plugin.settings.fileClassAlias) {
-                const eF = note.getExistingFieldForIndexedPath(`fileclass-field-${plugin.settings.fileClassAlias}`)
                 focusedElement.find("[class^=metadata-input]")?.setText(eF?.value || "")
             }
         }

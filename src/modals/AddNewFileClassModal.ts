@@ -29,15 +29,14 @@ export default class AddNewFileClassModal extends Modal {
 
     private buildAddFileClassForm(): void {
         const fileClassesPath = this.plugin.settings.classFilesPath!
-        const fileClassAlias = this.plugin.settings.fileClassAlias
         const nameContainer = this.contentEl.createDiv({ cls: "field-container" });
 
-        nameContainer.createDiv({ text: `${fileClassAlias} name`, cls: "label" })
+        nameContainer.createDiv({ text: `fileClass name`, cls: "label" })
         const nameInput = new TextComponent(nameContainer);
         nameInput.inputEl.addClass("with-label");
         nameInput.inputEl.addClass("full-width");
         nameInput.inputEl.setAttr("id", "fileclass-name-input")
-        const nameErrorContainer = this.contentEl.createDiv({ cls: "field-error", text: `This ${fileClassAlias} file already exists` });
+        const nameErrorContainer = this.contentEl.createDiv({ cls: "field-error", text: `This fileClass file already exists` });
 
         cleanActions(this.contentEl, ".footer-actions")
         const actionsContainer = this.contentEl.createDiv({ cls: "footer-actions" });

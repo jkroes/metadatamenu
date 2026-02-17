@@ -405,11 +405,7 @@ export class FieldsModal extends Modal {
         } else {
             const sortedIds = sortFileFields(this.plugin.fieldIndex, this.file).map(f => f.id)
             const fields: Array<ExistingField | Field> = [
-                ...this.existingFields
-                    .filter(eF => {
-                        if (eF.name === this.plugin.settings.fileClassAlias) return this.plugin.settings.showFileClassSelectInModal
-                        else return true
-                    }),
+                ...this.existingFields,
                 ...this.missingFields.sort((f1, f2) => sortedIds.indexOf(f1.id) < sortedIds.indexOf(f2.id) ? -1 : 1)
             ]
             for (const fieldOrEf of fields) {
