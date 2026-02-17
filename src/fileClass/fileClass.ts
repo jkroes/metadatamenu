@@ -516,7 +516,6 @@ export function indexFileClass(index: FieldIndex, file: TFile): void {
             )
             index.fileClassesPath.set(file.path, fileClass)
             index.fileClassesName.set(fileClass.name, fileClass)
-            const cache = index.plugin.app.metadataCache.getFileCache(file);
             if ((fileClass.getMajorVersion() === undefined || fileClass.getMajorVersion() as number < 2) && index.plugin.manifest.version < "0.6.0") {
                 index.v1FileClassesPath.set(file.path, fileClass)
                 index.remainingLegacyFileClasses = true
