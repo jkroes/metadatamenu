@@ -22,11 +22,7 @@ interface ShortId {
 
 const options: Record<string, { name: string, toValue: (value: any) => any }> = {
     "limit": { name: "limit", toValue: (value: any) => value },
-    "mapWithTag": { name: "mapWithTag", toValue: (value: boolean) => value },
     "icon": { name: "icon", toValue: (value: any) => `${value || "file-spreadsheet"}` },
-    "tagNames": { name: "tagNames", toValue: (values: string[]) => values.length ? values : null },
-    "filesPaths": { name: "filesPaths", toValue: (values: string[]) => values.length ? values : null },
-    "bookmarksGroups": { name: "bookmarksGroups", toValue: (values: string[]) => values.length ? values : null },
     "excludes": { name: "excludes", toValue: (values: FileClassAttribute[]) => values.length ? values.map(attr => attr.name) : null },
     "parent": { name: "extends", toValue: (value: FileClass) => value?.name || null },
     "savedViews": { name: "savedViews", toValue: (value: SavedView[]) => value },
@@ -457,16 +453,6 @@ export function createFileClass(plugin: MetadataMenu, name: string): FileClass {
     return fileClass
 }
 
-export function getBookmarksGroupsFromFrontMatter(_bookmarksGroups: string[] | string | undefined): string[] {
-    if (Array.isArray(_bookmarksGroups)) {
-        return _bookmarksGroups;
-    } else if (_bookmarksGroups) {
-        return _bookmarksGroups.split(",")
-    } else {
-        return []
-    }
-}
-
 export function getExcludedFieldsFromFrontmatter(excludedFields: string[] | string | undefined): string[] {
     if (Array.isArray(excludedFields)) {
         return excludedFields;
@@ -498,16 +484,6 @@ export function getFileClassNameFromPath(settings: MetadataMenuSettings, path: s
     return path.match(fileClassNameRegex)?.groups?.fileClassName
 }
 
-export function getFilesPathsFromFrontMatter(_filesPaths: string[] | string | undefined): string[] {
-    if (Array.isArray(_filesPaths)) {
-        return _filesPaths;
-    } else if (_filesPaths) {
-        return _filesPaths.split(",")
-    } else {
-        return []
-    }
-}
-
 export function getSortedRootFields(plugin: MetadataMenu, fileClass: FileClass): Field[] {
     const fieldsOrder = fileClass.fieldsOrder ||
         buildSortedAttributes(plugin, fileClass).map(attr => attr.id)
@@ -532,16 +508,6 @@ export function sortFileFields(index: FieldIndex, file: TFile): Field[] {
         sortedAttributes.push(...sortedFields)
     }
     return sortedAttributes
-}
-
-export function getTagNamesFromFrontMatter(_tagNames: string[] | string | undefined): string[] {
-    if (Array.isArray(_tagNames)) {
-        return _tagNames;
-    } else if (_tagNames) {
-        return _tagNames.split(",")
-    } else {
-        return []
-    }
 }
 
 export function indexFileClass(index: FieldIndex, file: TFile): void {
