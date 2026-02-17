@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Ref__ref_search_documentation",
+      "mcp__Ref__ref_read_url",
+      "WebFetch(domain:github.com)",
+      "WebSearch",
+      "WebFetch(domain:forum.obsidian.md)",
+      "WebFetch(domain:registry.npmjs.org)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run build:css:*)",
+      "Bash(npm view:*)",
+      "Bash(npm ls:*)",
+      "Bash(git stash:*)",
+      "Bash(git -C /Users/jkroes/repos/obsidian-plugins/metadatamenu add package.json package-lock.json src/typings/globals.d.ts)",
+      "Bash(git -C /Users/jkroes/repos/obsidian-plugins/metadatamenu commit -m \"chore: add monkey-around and obsidian-typings dependencies\n\nAlso pins @types/d3-dispatch@3.0.6 via overrides to avoid TypeScript\n4.7 parse errors from const type parameters in 3.0.7+.\nAdds global app declaration to globals.d.ts because obsidian@1.12.0\nremoved the var app: App declaration that was present in 1.4.11.\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\")",
+      "Bash(npx tsc:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(obsidian vault vault=\"test-vault-mdm\")",
+      "Bash(obsidian files vault=\"test-vault-mdm\" folder=\"__fixtures__\" ext=md)",
+      "Bash(obsidian files vault=\"test-vault-mdm\" folder=\"Fileclasses\" ext=md)",
+      "Bash(obsidian read:*)",
+      "Bash(obsidian files vault=\"test-vault-mdm\" folder=\"Folder3\" ext=md)",
+      "Bash(obsidian create:*)",
+      "mcp__plugin_playwright_playwright__browser_take_screenshot",
+      "mcp__playwright-electron__electron_first_window",
+      "mcp__playwright-electron__electron_windows",
+      "Bash(python3:*)",
+      "Bash(obsidian vault)",
+      "mcp__plugin_github_github__get_file_contents",
+      "mcp__plugin_github_github__search_code",
+      "mcp__plugin_github_github__search_repositories"
+    ]
+  }
+}

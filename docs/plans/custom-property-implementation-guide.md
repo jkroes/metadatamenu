@@ -711,3 +711,7 @@ Both require internal APIs from `obsidian-typings` and careful timing (`onLayout
 
 [Better Properties](https://github.com/unxok/obsidian-better-properties)
 [Pretty Properties](https://github.com/anareaty/pretty-properties)
+
+## Addendum
+
+Obsidian's built-in property types (e.g., text) can be monkey-patched using monkey-around to attach custom autocomplete suggestions without replacing the native widget. The patch wraps the existing render function, calls through to the original, then attaches an AbstractInputSuggest subclass to the rendered <input> element. The render context provides ctx.key (property name) and ctx.sourcePath (current file path), enabling per-property and per-FileClass suggestion logic at runtime — for example, supplying a filtered file list from a specific folder for one property while leaving another unaffected. Cleanup is automatic via this.register(uninstall). This approach is fragile (depends on Obsidian's internal DOM structure and the undocumented metadataTypeManager registry), but is well-suited for a pseudo-type system layered on top of native property types, where the type assignment in Obsidian's property registry stays as text but the suggestion behavior is driven by FileClass definitions.

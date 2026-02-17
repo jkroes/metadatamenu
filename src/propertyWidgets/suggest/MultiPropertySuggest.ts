@@ -9,6 +9,7 @@ export class MultiPropertySuggest extends AbstractInputSuggest<string> {
         private field: any,
     ) {
         super(app, inputElement);
+        inputElement.addEventListener("focus", () => inputElement.dispatchEvent(new Event("input")));
     }
 
     getSuggestions(query: string): string[] {
