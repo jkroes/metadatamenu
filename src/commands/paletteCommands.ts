@@ -136,10 +136,6 @@ function manageFieldAtCursorCommand(plugin: MetadataMenu) {
                                     const node = note.getNodeForIndexedPath(field.id)
                                     if (node) optionsList.createAndOpenNodeFieldModal(node)
                                     else new Notice("No field with definition at this position", 2000)
-                                } else if (key === plugin.settings.fileClassAlias) {
-                                    const node = note.getNodeForIndexedPath(`fileclass-field-${plugin.settings.fileClassAlias}`)
-                                    if (node) optionsList.createAndOpenNodeFieldModal(node)
-                                    else new Notice("No field with definition at this position", 2000)
                                 }
                             }
                             break;
@@ -315,25 +311,6 @@ function openFileclassViewCommand(plugin: MetadataMenu) {
 }
 
 
-function fileclassToFileCommand(plugin: MetadataMenu) {
-    plugin.addCommand({
-        id: "add_fileclass_to_file",
-        name: "Add fileClass to file",
-        icon: "package-plus",
-        checkCallback: (checking: boolean) => {
-            const activeFile = plugin.app.workspace.getActiveFile()
-            if (checking) {
-                return !!activeFile
-            }
-            if (activeFile) {
-                const modal = new AddFileClassTagModal(plugin, activeFile)
-                modal.open()
-
-            }
-        }
-    })
-}
-
 function updateLookupsAndFormulasCommand(plugin: MetadataMenu) {
     plugin.addCommand({
         id: "update_all_lookups",
@@ -398,6 +375,24 @@ function updateFileFormulasCommand(plugin: MetadataMenu) {
     })
 }
 
+function addFileClassTagCommand(plugin: MetadataMenu) {
+    plugin.addCommand({
+        id: "add_fileclass_tag",
+        name: "Add fileClass tag to file",
+        icon: "tag",
+        checkCallback: (checking: boolean) => {
+            const activeFile = plugin.app.workspace.getActiveFile()
+            if (checking) {
+                return !!activeFile && plugin.fieldIndex.fileClassesName.size > 0
+            }
+            if (activeFile) {
+                const modal = new AddFileClassTagModal(plugin, activeFile)
+                modal.open()
+            }
+        }
+    })
+}
+
 export function addCommands(plugin: MetadataMenu) {
     fileClassAttributeOptionsCommand(plugin);
     insertFileClassAttributeCommand(plugin);
@@ -410,6 +405,6 @@ export function addCommands(plugin: MetadataMenu) {
     updateFileLookupsCommand(plugin);
     updateFileFormulasCommand(plugin)
     openFileclassViewCommand(plugin)
-    fileclassToFileCommand(plugin)
+    addFileClassTagCommand(plugin)
     updateLookupsAndFormulasCommand(plugin)
 }
