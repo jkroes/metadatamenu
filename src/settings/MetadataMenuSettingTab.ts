@@ -1,4 +1,4 @@
-import { PluginSettingTab, Setting, ButtonComponent, ToggleComponent, Modal, DropdownComponent, moment, setIcon, SearchComponent } from "obsidian";
+import { PluginSettingTab, Setting, ButtonComponent, ToggleComponent, DropdownComponent, moment, setIcon, SearchComponent } from "obsidian";
 import MetadataMenu from "main";
 import FieldSetting from "src/settings/FieldSetting";
 import { FolderSuggest } from "src/suggester/FolderSuggester";
