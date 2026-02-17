@@ -119,3 +119,26 @@ export async function updatePropertiesCommands(plugin: MetadataMenu) {
         updatePropertiesPane(plugin)
     }
 }
+
+function cleanupPropertiesView(view: MarkdownView | { metadataEditor: { contentEl: HTMLElement, rendered: { containerEl: HTMLElement }[], addPropertyButtonEl: HTMLElement } }) {
+    if (!view.metadataEditor) return
+    // Remove per-property field buttons
+    view.metadataEditor.rendered?.forEach(item => {
+        item.containerEl.findAll(".field-btn-container").forEach(el => el.remove())
+    })
+    // Restore native "Add property" button and remove action-container
+    const actionContainer = view.metadataEditor.contentEl.find('.action-container')
+    if (actionContainer) {
+        const addBtn = view.metadataEditor.addPropertyButtonEl
+        if (addBtn) view.metadataEditor.contentEl.insertBefore(addBtn, actionContainer)
+        actionContainer.remove()
+    }
+}
+
+export function removePropertiesButtons(plugin: MetadataMenu) {
+    plugin.app.workspace.getLeavesOfType("markdown").forEach(leaf => {
+        if (leaf.view instanceof MarkdownView) cleanupPropertiesView(leaf.view)
+    })
+    const propView = getPropView(plugin)
+    if (propView) cleanupPropertiesView(propView)
+}

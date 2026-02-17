@@ -12,7 +12,7 @@ import { DEFAULT_SETTINGS, MetadataMenuSettings } from "src/settings/MetadataMen
 import MetadataMenuSettingTab from "src/settings/MetadataMenuSettingTab";
 import * as SettingsMigration from 'src/settings/migrateSetting';
 import ValueSuggest from "src/suggester/metadataSuggester";
-import { updatePropertiesCommands } from 'src/options/updateProps';
+import { updatePropertiesCommands, removePropertiesButtons } from 'src/options/updateProps';
 import { FileClassFolderButton } from 'src/fileClass/fileClassFolderButton';
 import { FileClassViewManager } from 'src/components/FileClassViewManager';
 import { IndexDatabase } from 'src/db/DatabaseManager';
@@ -186,5 +186,6 @@ export default class MetadataMenu extends Plugin {
 	onunload() {
 		console.log('x------ Metadata Menu unloaded ------x');
 		FileClassFolderButton.removeBtn(this)
+		removePropertiesButtons(this)
 	};
 }
