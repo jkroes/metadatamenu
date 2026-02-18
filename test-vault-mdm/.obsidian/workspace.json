@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "0abcf2c315be06f1",
+        "id": "63a679057a8edb79",
         "type": "tabs",
         "children": [
           {
-            "id": "4449d5afb82ed05f",
+            "id": "a30b4e72fbea80b5",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -78,7 +78,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "a3ddc01deee26343",
@@ -169,12 +170,12 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "4449d5afb82ed05f",
+  "active": "a30b4e72fbea80b5",
   "lastOpenFiles": [
-    "TestFiles/Bob.md",
-    "TestFiles/test-suggestions.md",
-    "__fixtures__/tags.md",
     "TestFiles/Carol.md",
+    "TestFiles/test-suggestions.md",
+    "TestFiles/Bob.md",
+    "__fixtures__/tags.md",
     "TestFiles/Alice.md",
     "Folder3/test3_1_fileclass_frontmatter.md",
     "Fileclasses/TestFieldTypes.md",
