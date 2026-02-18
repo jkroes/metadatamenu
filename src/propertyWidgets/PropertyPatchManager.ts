@@ -1,4 +1,4 @@
-import { Component, MarkdownView, TFile } from "obsidian";
+import { Component, MarkdownView } from "obsidian";
 import { around } from "monkey-around";
 import type MetadataMenu from "../../main";
 import { SelectPropertySuggest } from "./suggest/SelectPropertySuggest";
@@ -8,27 +8,19 @@ import { MultiFilePropertySuggest } from "./suggest/MultiFilePropertySuggest";
 
 export class PropertyPatchManager extends Component {
     private uninstallPatches: (() => void)[] = [];
-    private processedInputs = new WeakSet<Element>();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private processedInputs = new WeakMap<Element, any>();
 
     constructor(private plugin: MetadataMenu) {
         super();
     }
 
     onload() {
-        console.log("[MDM Debug] PropertyPatchManager onload()");
         const plugin = this.plugin;
         const widgets = plugin.app.metadataTypeManager.registeredTypeWidgets;
-        console.log("[MDM Debug] registeredTypeWidgets keys:", Object.keys(widgets ?? {}));
 
         const textWidget = widgets?.["text"];
         const multitextWidget = widgets?.["multitext"];
-
-        if (!textWidget) {
-            console.log("[MDM Debug] text widget not found in registeredTypeWidgets");
-        }
-        if (!multitextWidget) {
-            console.log("[MDM Debug] multitext widget not found in registeredTypeWidgets");
-        }
 
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
@@ -52,16 +44,17 @@ export class PropertyPatchManager extends Component {
                                 ".metadata-input-longtext, input"
                             );
                             if (inputEl && !self.processedInputs.has(inputEl)) {
-                                self.processedInputs.add(inputEl);
                                 switch ((field as any).type) {
-                                    case "Select":
-                                        console.log("[MDM Debug] attaching SelectPropertySuggest to", key);
-                                        new SelectPropertySuggest(plugin.app, inputEl, field, ctx.onChange);
+                                    case "Select": {
+                                        const suggest = new SelectPropertySuggest(plugin.app, inputEl, field, ctx.onChange);
+                                        self.processedInputs.set(inputEl, suggest);
                                         break;
-                                    case "File":
-                                        console.log("[MDM Debug] attaching FilePropertySuggest to", key);
-                                        new FilePropertySuggest(plugin.app, inputEl, field, ctx.onChange);
+                                    }
+                                    case "File": {
+                                        const suggest = new FilePropertySuggest(plugin.app, inputEl, field, ctx.onChange);
+                                        self.processedInputs.set(inputEl, suggest);
                                         break;
+                                    }
                                 }
                             }
                         }
@@ -71,7 +64,6 @@ export class PropertyPatchManager extends Component {
                 }
             });
             this.uninstallPatches.push(uninstall);
-            console.log("[MDM Debug] patched text widget render");
         }
 
         if (multitextWidget) {
@@ -98,16 +90,17 @@ export class PropertyPatchManager extends Component {
                                 );
                                 inputs.forEach(inputEl => {
                                     if (self.processedInputs.has(inputEl)) return;
-                                    self.processedInputs.add(inputEl);
                                     switch ((field as any).type) {
-                                        case "Multi":
-                                            console.log("[MDM Debug] attaching MultiPropertySuggest to input in", key);
-                                            new MultiPropertySuggest(plugin.app, inputEl, field, ctx.onChange);
+                                        case "Multi": {
+                                            const suggest = new MultiPropertySuggest(plugin.app, inputEl, field, ctx.onChange);
+                                            self.processedInputs.set(inputEl, suggest);
                                             break;
-                                        case "MultiFile":
-                                            console.log("[MDM Debug] attaching MultiFilePropertySuggest to input in", key);
-                                            new MultiFilePropertySuggest(plugin.app, inputEl, field, ctx.onChange);
+                                        }
+                                        case "MultiFile": {
+                                            const suggest = new MultiFilePropertySuggest(plugin.app, inputEl, field, ctx.onChange);
+                                            self.processedInputs.set(inputEl, suggest);
                                             break;
+                                        }
                                     }
                                 });
                             };
@@ -118,13 +111,11 @@ export class PropertyPatchManager extends Component {
                 }
             });
             this.uninstallPatches.push(uninstall);
-            console.log("[MDM Debug] patched multitext widget render");
         }
 
         // Post-index scan: attach suggests to properties that rendered before indexing completed
         this.registerEvent(
             plugin.app.metadataCache.on('metadata-menu:indexed', () => {
-                console.log("[MDM Debug] metadata-menu:indexed: scanning open views");
                 this.processOpenViews();
             })
         );
@@ -136,19 +127,31 @@ export class PropertyPatchManager extends Component {
             const view = leaf.view as MarkdownView;
             if (!view.file || !view.metadataEditor?.rendered) continue;
             const sourcePath = view.file.path;
+            const fields = plugin.fieldIndex.filesFields.get(sourcePath);
 
             for (const rendered of view.metadataEditor.rendered) {
                 const key = rendered.entry.key;
-                const fields = plugin.fieldIndex.filesFields.get(sourcePath);
                 const field = fields?.find((f: any) => f.name === key);
-                if (!field) continue;
 
                 const inputEl = rendered.valueEl.querySelector<HTMLInputElement | HTMLDivElement>(
                     ".metadata-input-longtext, input"
                 );
-                if (!inputEl || this.processedInputs.has(inputEl)) continue;
+                if (!inputEl) continue;
 
-                this.processedInputs.add(inputEl);
+                const existing = this.processedInputs.get(inputEl);
+
+                if (!field) {
+                    // Field no longer applies — disable any attached suggest
+                    if (existing) {
+                        existing.getSuggestions = () => [];
+                        existing.close();
+                        this.processedInputs.delete(inputEl);
+                    }
+                    continue;
+                }
+
+                if (existing) continue; // Already attached, field still applies
+
                 const file = view.file;
                 const onChange = (value: unknown) => {
                     plugin.app.fileManager.processFrontMatter(file, (fm) => {
@@ -156,20 +159,27 @@ export class PropertyPatchManager extends Component {
                     });
                 };
 
-                console.log("[MDM Debug] post-index attaching suggest for", key, "in", sourcePath);
                 switch ((field as any).type) {
-                    case "Select":
-                        new SelectPropertySuggest(plugin.app, inputEl, field, onChange);
+                    case "Select": {
+                        const suggest = new SelectPropertySuggest(plugin.app, inputEl, field, onChange);
+                        this.processedInputs.set(inputEl, suggest);
                         break;
-                    case "File":
-                        new FilePropertySuggest(plugin.app, inputEl, field, onChange);
+                    }
+                    case "File": {
+                        const suggest = new FilePropertySuggest(plugin.app, inputEl, field, onChange);
+                        this.processedInputs.set(inputEl, suggest);
                         break;
-                    case "Multi":
-                        new MultiPropertySuggest(plugin.app, inputEl, field, onChange);
+                    }
+                    case "Multi": {
+                        const suggest = new MultiPropertySuggest(plugin.app, inputEl, field, onChange);
+                        this.processedInputs.set(inputEl, suggest);
                         break;
-                    case "MultiFile":
-                        new MultiFilePropertySuggest(plugin.app, inputEl, field, onChange);
+                    }
+                    case "MultiFile": {
+                        const suggest = new MultiFilePropertySuggest(plugin.app, inputEl, field, onChange);
+                        this.processedInputs.set(inputEl, suggest);
                         break;
+                    }
                 }
             }
         }
