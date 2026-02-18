@@ -79,6 +79,15 @@ After rebuilding, reload the plugin inside Obsidian (Settings → Community Plug
 - [Obsidian Forum](https://forum.obsidian.md)
 - [Obsidian Community Plugins](https://obsidian.md/plugins)
 
+## Git Branch Rules
+
+**CRITICAL — applies to Claude and all subagents:**
+
+- Only ever commit to `master` or a new branch explicitly created for the current task.
+- **Never commit to any other existing branch.** This includes `archive/*`, `feature/*`, `backup/*`, or any branch that already exists in the repo.
+- Before the first commit of any session, run `git branch --show-current` and verify it is `master` or the intended new branch. If it is anything else, stop and alert the user immediately.
+- If a skill (e.g. `using-git-worktrees`, `brainstorming`, `writing-plans`) creates a worktree or switches branches, verify the resulting branch before doing any work.
+
 ## Notes for Claude
 
 - When adding components that inject DOM elements (file explorer, properties panel, etc.), always add corresponding cleanup in `onunload()` in `main.ts`. The current `onunload()` is minimal — missing cleanup causes stale UI after plugin disable.
