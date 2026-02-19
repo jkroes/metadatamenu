@@ -127,6 +127,55 @@ export class AddFileClassTagModal extends SuggestModal<string> {
         })
     }
 }
+
+export class NewNoteFileClassModal extends SuggestModal<string> {
+
+    constructor(
+        private plugin: MetadataMenu,
+        private file: TFile
+    ) {
+        super(plugin.app)
+        this.setPlaceholder("Choose a FileClass for this new note")
+    }
+
+    getSuggestions(query: string): string[] {
+        const foldersMap = this.plugin.fieldIndex.foldersMatchingFileClasses
+        return [...foldersMap.values()]
+            .map(fc => fc.name)
+            .filter(name => name.toLowerCase().contains(query.toLowerCase()))
+            .sort()
+    }
+
+    renderSuggestion(item: string, el: HTMLElement): void {
+        el.createEl("div", { text: item })
+    }
+
+    onChooseSuggestion(item: string, _evt: MouseEvent | KeyboardEvent): void {
+        const fileClass = this.plugin.fieldIndex.fileClassesName.get(item)
+        const folder = fileClass?.getFileClassOptions().folder
+
+        this.plugin.app.fileManager.processFrontMatter(this.file, (fm) => {
+            const tags = fm["tags"]
+            if (!tags) {
+                fm["tags"] = [item]
+            } else if (Array.isArray(tags)) {
+                if (!tags.includes(item)) tags.push(item)
+            } else {
+                const tagArray = String(tags).split(',').map((t: string) => t.trim())
+                if (!tagArray.includes(item)) fm["tags"] = [...tagArray, item]
+            }
+        }).then(() => {
+            if (folder) {
+                const newPath = `${folder}/${this.file.name}`
+                if (this.file.path !== newPath) {
+                    this.plugin.app.fileManager.renameFile(this.file, newPath)
+                        .catch((err) => new Notice(`Failed to move file: ${err.message}`))
+                }
+            }
+        })
+    }
+}
+
 class FileClass {
     constructor(public plugin: MetadataMenu, public name: string) {
         this.attributes = [];
