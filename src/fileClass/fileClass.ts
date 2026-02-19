@@ -124,7 +124,7 @@ export class AddFileClassTagModal extends SuggestModal<string> {
                         .catch((err) => new Notice(`Failed to move file: ${err.message}`))
                 }
             }
-        })
+        }).catch((err) => new Notice(`Failed to update frontmatter: ${err.message}`))
     }
 }
 
@@ -172,7 +172,7 @@ export class NewNoteFileClassModal extends SuggestModal<string> {
                         .catch((err) => new Notice(`Failed to move file: ${err.message}`))
                 }
             }
-        })
+        }).catch((err) => new Notice(`Failed to update frontmatter: ${err.message}`))
     }
 }
 
