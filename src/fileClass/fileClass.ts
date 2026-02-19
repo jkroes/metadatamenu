@@ -78,6 +78,25 @@ export class AddFileClassTagModal extends SuggestModal<string> {
         this.setPlaceholder("Choose a fileClass to add as a tag")
     }
 
+    onOpen(): void {
+        super.onOpen()
+        const cache = this.plugin.app.metadataCache.getFileCache(this.file)
+        const fmTags: string | string[] = cache?.frontmatter?.tags || []
+        const fmTagArray: string[] = Array.isArray(fmTags)
+            ? fmTags
+            : fmTags.split(',').map((t: string) => t.trim())
+        const inlineTags: string[] = cache?.tags?.map(t => t.tag.replace(/^#/, '')) || []
+        const existingTags = new Set([...fmTagArray, ...inlineTags])
+
+        const foldersMap = this.plugin.fieldIndex.foldersMatchingFileClasses
+        const folderAssociatedNames = new Set([...foldersMap.values()].map(fc => fc.name))
+        const noteAlreadyHasFolderClass = [...existingTags].some(tag => folderAssociatedNames.has(tag))
+
+        if (noteAlreadyHasFolderClass && folderAssociatedNames.size > 0) {
+            new Notice("Folder-associated FileClasses are hidden. This note already has a folder FileClass — edit frontmatter directly to change it.")
+        }
+    }
+
     getSuggestions(query: string): string[] {
         const cache = this.plugin.app.metadataCache.getFileCache(this.file)
         const fmTags: string | string[] = cache?.frontmatter?.tags || []
@@ -598,7 +617,7 @@ export function indexFileClass(index: FieldIndex, file: TFile): void {
                 index.tagsMatchingFileClasses.set(fileClassName, fileClass)
             }
             const folder = cache?.frontmatter?.folder
-            if (typeof folder === "string" && folder !== "") {
+            if (typeof folder === "string" && folder !== "" && !index.foldersMatchingFileClasses.has(folder)) {
                 index.foldersMatchingFileClasses.set(folder, fileClass)
             }
         } catch (error) {
