@@ -121,6 +121,7 @@ export class AddFileClassTagModal extends SuggestModal<string> {
                 const newPath = `${folder}/${this.file.name}`
                 if (this.file.path !== newPath) {
                     this.plugin.app.fileManager.renameFile(this.file, newPath)
+                        .catch((err) => new Notice(`Failed to move file: ${err.message}`))
                 }
             }
         })
