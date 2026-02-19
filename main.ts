@@ -122,7 +122,7 @@ export default class MetadataMenu extends Plugin {
 							const tagArray = String(tags).split(',').map((t: string) => t.trim())
 							if (!tagArray.includes(folderFileClass.name)) fm["tags"] = [...tagArray, folderFileClass.name]
 						}
-					})
+					}).catch((err) => new Notice(`Failed to auto-tag file: ${err.message}`))
 				} else if (this.settings.promptFileClassOnNewNote && this.fieldIndex.foldersMatchingFileClasses.size > 0) {
 					// Prompt: file is not in a folder-associated folder
 					const modal = new NewNoteFileClassModal(this, abstractFile)
