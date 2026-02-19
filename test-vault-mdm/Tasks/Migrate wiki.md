@@ -5,7 +5,7 @@ status: todo
 priority: low
 effort: XL
 project: "[[Knowledge Base Migration]]"
-assignee: "[[Bob Okafor]]"
+assignee: "[[Alice Chen]]"
 blocked_by: []
 due_date: 2026-04-01
 ---

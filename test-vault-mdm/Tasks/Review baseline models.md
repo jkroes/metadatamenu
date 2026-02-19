@@ -5,7 +5,7 @@ status: todo
 priority: medium
 effort: M
 project: "[[LLM Evaluation Framework]]"
-assignee: "[[Alice Chen]]"
+assignee: "[[David Kim]]"
 blocked_by:
   - "[[Write evaluation harness]]"
 due_date: 2026-03-30

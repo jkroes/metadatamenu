@@ -28,5 +28,16 @@ fields:
     name: contacts
     type: MultiFile
     options:
-      dvQueryString: "dv.pages('\"People\"')"
+      dvQueryString: dv.pages('"People"')
+limit: 20
+excludes:
+extends:
+savedViews: []
+favoriteView:
+fieldsOrder:
+  - o00004
+  - o00003
+  - o00002
+  - o00001
+version: "2.0"
 ---

@@ -16,7 +16,7 @@ fields:
     name: organization
     type: File
     options:
-      dvQueryString: "dv.pages('\"Organizations\"')"
+      dvQueryString: dv.pages('"Organizations"')
   - id: n00003
     name: expertise
     type: Multi
@@ -37,4 +37,16 @@ fields:
     name: website
     type: Input
     options: {}
+limit: 20
+excludes:
+extends:
+savedViews: []
+favoriteView:
+fieldsOrder:
+  - n00005
+  - n00004
+  - n00003
+  - n00002
+  - n00001
+version: "2.0"
 ---

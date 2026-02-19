@@ -3,7 +3,7 @@ tags:
   - Project
 status: on-hold
 priority: low
-lead: "[[Bob Okafor]]"
+lead: "[[Elena Petrova]]"
 team:
   - "[[Carla Mendez]]"
 partners: []

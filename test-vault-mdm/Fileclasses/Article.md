@@ -19,4 +19,13 @@ fields:
     name: doi
     type: Input
     options: {}
+limit: 20
+excludes:
+savedViews: []
+favoriteView:
+fieldsOrder:
+  - a00003
+  - a00002
+  - a00001
+version: "2.0"
 ---

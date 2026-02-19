@@ -5,7 +5,7 @@ status: review
 priority: critical
 effort: L
 project: "[[Partner Integration API]]"
-assignee: "[[Elena Petrova]]"
+assignee: "[[Alice Chen]]"
 blocked_by:
   - "[[Set up CI pipeline]]"
   - "[[Define API contract]]"
