@@ -65,6 +65,7 @@ export abstract class FieldIndexBuilder extends Component {
     public lastRevision: 0;
     public lookupQueries: Map<string, Field>;
     public tagsMatchingFileClasses: Map<string, FileClass>;
+    public foldersMatchingFileClasses: Map<string, FileClass>;
     public v1FileClassesPath: Map<string, FileClass>;
     public v2FileClassesPath: Map<string, FileClass>;
     public valuesListNotePathValues: Map<string, string[]>;
@@ -115,6 +116,7 @@ export abstract class FieldIndexBuilder extends Component {
         this.fileClassesAncestors = new Map();
         this.valuesListNotePathValues = new Map();
         this.tagsMatchingFileClasses = new Map();
+        this.foldersMatchingFileClasses = new Map();
         this.filesFileClasses = new Map();
         this.filesFileClassesNames = new Map();
         this.lookupQueries = new Map();

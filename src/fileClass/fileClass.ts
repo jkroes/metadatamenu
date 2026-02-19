@@ -511,6 +511,7 @@ export function sortFileFields(index: FieldIndex, file: TFile): Field[] {
 export function indexFileClass(index: FieldIndex, file: TFile): void {
     const fileClassName = getFileClassNameFromPath(index.plugin.settings, file.path)
     if (fileClassName) {
+        const cache = index.plugin.app.metadataCache.getFileCache(file)
         try {
             const fileClass = createFileClass(index.plugin, fileClassName)
             index.fileClassesFields.set(
@@ -530,6 +531,10 @@ export function indexFileClass(index: FieldIndex, file: TFile): void {
             }
             if (!fileClassName.includes(" ")) {
                 index.tagsMatchingFileClasses.set(fileClassName, fileClass)
+            }
+            const folder = cache?.frontmatter?.folder
+            if (typeof folder === "string" && folder !== "") {
+                index.foldersMatchingFileClasses.set(folder, fileClass)
             }
         } catch (error) {
             console.error(error)
