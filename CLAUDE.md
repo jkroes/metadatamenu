@@ -79,6 +79,11 @@ After rebuilding, reload the plugin inside Obsidian (Settings → Community Plug
 - [Obsidian Forum](https://forum.obsidian.md)
 - [Obsidian Community Plugins](https://obsidian.md/plugins)
 
+## File System Rules
+
+- Never write or edit files outside of this repository directory. Do not write to `/tmp`, `~`, or any path outside the project root.
+- If a temporary file is needed, create a subfolder within this repository (e.g. `tmp/`).
+
 ## Git Branch Rules
 
 **CRITICAL — applies to Claude and all subagents:**
