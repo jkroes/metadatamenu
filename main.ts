@@ -1,5 +1,5 @@
 import './env'
-import { MarkdownView, Notice, Plugin } from 'obsidian';
+import { MarkdownView, Notice, Plugin, TFile } from 'obsidian';
 import { addCommands } from 'src/commands/paletteCommands';
 import ContextMenu from 'src/components/ContextMenu';
 import ExtraButton from 'src/components/ExtraButton';
@@ -13,6 +13,7 @@ import * as SettingsMigration from 'src/settings/migrateSetting';
 import ValueSuggest from "src/suggester/metadataSuggester";
 import { updatePropertiesCommands, removePropertiesButtons } from 'src/options/updateProps';
 import { FileClassFolderButton } from 'src/fileClass/fileClassFolderButton';
+import { NewNoteFileClassModal } from 'src/fileClass/fileClass';
 import { FileClassViewManager } from 'src/components/FileClassViewManager';
 import { IndexDatabase } from 'src/db/DatabaseManager';
 import { FileClassCodeBlockManager } from 'src/components/FileClassCodeBlockManager';
@@ -93,6 +94,40 @@ export default class MetadataMenu extends Plugin {
 		this.registerEvent(
 			this.app.workspace.on("file-open", (file) => {
 				updatePropertiesCommands(this)
+			})
+		)
+
+		this.registerEvent(
+			this.app.vault.on("create", (abstractFile) => {
+				if (!(abstractFile instanceof TFile)) return
+				if (abstractFile.extension !== "md") return
+
+				const classFilesPath = this.settings.classFilesPath
+				if (classFilesPath && abstractFile.path.startsWith(classFilesPath)) return
+
+				if (!this.launched) return
+
+				const parentFolder = abstractFile.parent?.path ?? ""
+				const folderFileClass = this.fieldIndex.foldersMatchingFileClasses.get(parentFolder)
+
+				if (folderFileClass) {
+					// Auto-tag: file is in a folder-associated folder
+					this.app.fileManager.processFrontMatter(abstractFile, (fm) => {
+						const tags = fm["tags"]
+						if (!tags) {
+							fm["tags"] = [folderFileClass.name]
+						} else if (Array.isArray(tags)) {
+							if (!tags.includes(folderFileClass.name)) tags.push(folderFileClass.name)
+						} else {
+							const tagArray = String(tags).split(',').map((t: string) => t.trim())
+							if (!tagArray.includes(folderFileClass.name)) fm["tags"] = [...tagArray, folderFileClass.name]
+						}
+					})
+				} else if (this.settings.promptFileClassOnNewNote && this.fieldIndex.foldersMatchingFileClasses.size > 0) {
+					// Prompt: file is not in a folder-associated folder
+					const modal = new NewNoteFileClassModal(this, abstractFile)
+					modal.open()
+				}
 			})
 		)
 
