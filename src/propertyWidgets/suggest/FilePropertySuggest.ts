@@ -32,5 +32,6 @@ export class FilePropertySuggest extends AbstractInputSuggest<TFile> {
     selectSuggestion(file: TFile): void {
         this.onChange(`[[${file.basename}]]`);
         this.close();
+        this.inputElement.blur();
     }
 }
