@@ -33,6 +33,7 @@ export interface MetadataMenuSettings {
 	fileClassIcon: string;
 	isAutoCalculationEnabled: boolean;
 	disableDataviewPrompt: boolean;
+	promptFileClassOnNewNote: boolean;
 }
 
 export const DEFAULT_SETTINGS: MetadataMenuSettings = {
@@ -63,6 +64,7 @@ export const DEFAULT_SETTINGS: MetadataMenuSettings = {
 	fileClassIcon: "package",
 	isAutoCalculationEnabled: true,
 	disableDataviewPrompt: false,
+	promptFileClassOnNewNote: true,
 };
 
 export const incrementVersion = (plugin: MetadataMenu) => {

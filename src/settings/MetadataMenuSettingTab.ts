@@ -526,6 +526,19 @@ export default class MetadataMenuSettingTab extends PluginSettingTab {
 			})
 		showFileClassSelectInModal.settingEl.addClass("no-border");
 		showFileClassSelectInModal.controlEl.addClass("full-width");
+
+		const promptOnNewNote = new Setting(classFilesSettings.containerEl)
+			.setName('Prompt for FileClass on new note')
+			.setDesc('When creating a note outside any folder-associated FileClass folder, show a modal to assign a FileClass. Disable if you create notes programmatically.')
+			.addToggle(cb => {
+				cb.setValue(this.plugin.settings.promptFileClassOnNewNote);
+				cb.onChange(value => {
+					this.plugin.settings.promptFileClassOnNewNote = value;
+					this.plugin.saveSettings();
+				})
+			})
+		promptOnNewNote.settingEl.addClass("no-border");
+		promptOnNewNote.controlEl.addClass("full-width");
 		//#endregion
 		//#region button display
 		/*
