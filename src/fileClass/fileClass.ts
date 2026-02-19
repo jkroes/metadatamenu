@@ -87,8 +87,13 @@ export class AddFileClassTagModal extends SuggestModal<string> {
         const inlineTags: string[] = cache?.tags?.map(t => t.tag.replace(/^#/, '')) || []
         const existingTags = new Set([...fmTagArray, ...inlineTags])
 
+        const foldersMap = this.plugin.fieldIndex.foldersMatchingFileClasses
+        const folderAssociatedNames = new Set([...foldersMap.values()].map(fc => fc.name))
+        const noteAlreadyHasFolderClass = [...existingTags].some(tag => folderAssociatedNames.has(tag))
+
         return [...this.plugin.fieldIndex.fileClassesName.keys()]
             .filter(name => !existingTags.has(name))
+            .filter(name => !(noteAlreadyHasFolderClass && folderAssociatedNames.has(name)))
             .filter(name => name.toLowerCase().contains(query.toLowerCase()))
             .sort()
     }
@@ -98,6 +103,9 @@ export class AddFileClassTagModal extends SuggestModal<string> {
     }
 
     onChooseSuggestion(item: string, _evt: MouseEvent | KeyboardEvent): void {
+        const fileClass = this.plugin.fieldIndex.fileClassesName.get(item)
+        const folder = fileClass?.getFileClassOptions().folder
+
         this.plugin.app.fileManager.processFrontMatter(this.file, (fm) => {
             const tags = fm["tags"]
             if (!tags) {
@@ -107,6 +115,13 @@ export class AddFileClassTagModal extends SuggestModal<string> {
             } else {
                 const tagArray = String(tags).split(',').map((t: string) => t.trim())
                 if (!tagArray.includes(item)) fm["tags"] = [...tagArray, item]
+            }
+        }).then(() => {
+            if (folder) {
+                const newPath = `${folder}/${this.file.name}`
+                if (this.file.path !== newPath) {
+                    this.plugin.app.fileManager.renameFile(this.file, newPath)
+                }
             }
         })
     }
