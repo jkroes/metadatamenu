@@ -83,6 +83,12 @@ export class FileClassSettingsView {
             `Names of fields to exclude from ancestor fileclasses`,
             (action: HTMLDivElement) => this.buildExcludesComponent(action)
         )
+        this.fileClassSettings["folder"] = new FileClassSetting(
+            settingsContainer,
+            "Associated folder",
+            "Vault-relative folder path (e.g. <code>Projects</code>). Adding this FileClass tag to a note moves it into this folder. Creating a note in this folder applies this tag.",
+            (action: HTMLDivElement) => this.buildFolderComponent(action)
+        )
         this.buildSaveBtn();
         this.saveBtn.removeClass("active")
     }
@@ -142,6 +148,17 @@ export class FileClassSettingsView {
         fieldAddBtn.onclick = () => {
             new FieldSuggestModal(this).open();
         }
+    }
+
+    private buildFolderComponent(action: HTMLDivElement): void {
+        const input = new TextComponent(action)
+            .setValue(this.fileClassOptions.folder || "")
+            .onChange((value) => {
+                this.saveBtn.addClass("active");
+                this.fileClassOptions.folder = value.trim().replace(/\/$/, '') || undefined;
+            })
+        input.inputEl.setAttr("id", "fileclass-settings-folder-input")
+        input.inputEl.setAttr("placeholder", "folder/path")
     }
 
     private buildExtendComponent(action: HTMLDivElement): void {
