@@ -25,7 +25,8 @@ const options: Record<string, { name: string, toValue: (value: any) => any }> = 
     "parent": { name: "extends", toValue: (value: FileClass) => value?.name || null },
     "savedViews": { name: "savedViews", toValue: (value: SavedView[]) => value },
     "favoriteView": { name: "favoriteView", toValue: (value?: string) => value || null },
-    "fieldsOrder": { name: "fieldsOrder", toValue: (value?: Field['id'][]) => value || [] }
+    "fieldsOrder": { name: "fieldsOrder", toValue: (value?: Field['id'][]) => value || [] },
+    "folder": { name: "folder", toValue: (value: string | undefined) => value || null }
 }
 
 export interface FileClassChild {
@@ -42,6 +43,7 @@ export interface FileClassOptions {
     savedViews?: SavedView[],
     favoriteView?: string | null
     fieldsOrder?: Field['id'][]
+    folder?: string
 }
 
 export class FileClassOptions {
@@ -53,7 +55,8 @@ export class FileClassOptions {
         public excludes?: Array<FileClassAttribute>,
         public savedViews?: SavedView[],
         public favoriteView?: string | null,
-        public fieldsOrder?: Field['id'][]
+        public fieldsOrder?: Field['id'][],
+        public folder?: string
     ) {
 
     }
@@ -121,7 +124,8 @@ class FileClass {
             icon: _icon,
             savedViews: _savedViews,
             favoriteView: _favoriteView,
-            fieldsOrder: _fieldsOrder
+            fieldsOrder: _fieldsOrder,
+            folder: _folder
         } = this.plugin.app.metadataCache.getFileCache(this.getClassFile())?.frontmatter as Record<string, any> || {}
         const index = this.plugin.fieldIndex
         const parent = index.fileClassesName.get(_parent);
@@ -138,7 +142,8 @@ class FileClass {
         const savedViews: SavedView[] = _savedViews || [];
         const favoriteView: string | null = (typeof _favoriteView === "string" && _favoriteView !== "") ? _favoriteView : null
         const fieldsOrder: Field['id'][] = _fieldsOrder || []
-        return new FileClassOptions(limit, icon, parent, excludes, savedViews, favoriteView, fieldsOrder);
+        const folder: string | undefined = typeof _folder === "string" && _folder !== "" ? _folder : undefined
+        return new FileClassOptions(limit, icon, parent, excludes, savedViews, favoriteView, fieldsOrder, folder);
     }
 
     public getClassFile(): TFile {
